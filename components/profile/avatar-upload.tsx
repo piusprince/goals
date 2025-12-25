@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 import { uploadAvatar } from "@/lib/actions/profile-actions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -59,13 +60,15 @@ export function AvatarUpload({
     const result = await uploadAvatar(formData);
 
     if (result.error) {
-      setError(
+      const errorMessage =
         typeof result.error === "string"
           ? result.error
-          : "Failed to upload avatar"
-      );
+          : "Failed to upload avatar";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setPreview(currentAvatarUrl);
     } else if (result.data) {
+      toast.success("Avatar updated successfully!");
       onUploadComplete?.(result.data.url);
     }
 
