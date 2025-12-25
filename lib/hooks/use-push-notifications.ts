@@ -17,12 +17,13 @@ export type PushPermissionState =
 /**
  * Convert a base64 string to a Uint8Array (for VAPID key)
  */
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
 
   const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
+  const buffer = new ArrayBuffer(rawData.length);
+  const outputArray = new Uint8Array(buffer);
 
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
@@ -53,7 +54,7 @@ export function usePushNotifications() {
       }
 
       // Check permission
-      const permission = Notification.permission as PushPermissionState;
+      const permission = Notification.permission;
       setPermissionState(permission === "default" ? "prompt" : permission);
 
       // Check existing subscription

@@ -422,7 +422,43 @@ export type Database = {
       };
     };
     Views: {};
-    Functions: {};
+    Functions: {
+      get_invite_by_token: {
+        Args: {
+          invite_token: string;
+        };
+        Returns: {
+          id: string;
+          goal_id: string;
+          goal_title: string;
+          goal_description: string | null;
+          inviter_name: string;
+          role: string;
+          expires_at: string;
+          is_expired: boolean;
+          is_accepted: boolean;
+        }[];
+      };
+      accept_invite_by_token: {
+        Args: {
+          invite_token: string;
+        };
+        Returns: {
+          success: boolean;
+          goalId?: string;
+          error?: string;
+        };
+      };
+      decline_invite_by_token: {
+        Args: {
+          invite_token: string;
+        };
+        Returns: {
+          success: boolean;
+          error?: string;
+        };
+      };
+    };
     Enums: {
       goal_type: "one-time" | "target" | "habit";
     };

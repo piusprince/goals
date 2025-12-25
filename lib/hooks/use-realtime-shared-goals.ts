@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createBrowserClient } from "@/lib/supabase/client";
 import { GoalMemberWithUser } from "@/lib/supabase/types";
 import {
   RealtimeChannel,
@@ -23,7 +23,7 @@ export function useRealtimeSharedGoals({
   const [isConnected, setIsConnected] = useState(false);
 
   const subscribe = useCallback(() => {
-    const supabase = createClient();
+    const supabase = createBrowserClient();
 
     const newChannel = supabase
       .channel(`user-memberships-${userId}`)
