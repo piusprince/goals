@@ -96,7 +96,7 @@ export function calculateStreak(
   } else {
     // Start from the most recent check-in day
     checkDate = hasToday ? todayStr : yesterdayStr;
-    
+
     while (dates.has(checkDate)) {
       currentStreak++;
       const prevDate = new Date(checkDate);
@@ -112,7 +112,7 @@ export function calculateStreak(
   for (let i = 0; i < sortedDates.length - 1; i++) {
     const currentDate = new Date(sortedDates[i]);
     const nextDate = new Date(sortedDates[i + 1]);
-    
+
     // Check if consecutive days
     const diffDays = Math.floor(
       (currentDate.getTime() - nextDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -153,12 +153,14 @@ export function hasCheckedInToday(
 
 /**
  * Update streak values after a new check-in
+ * @param freezeProtected If true, a streak freeze was active, so don't reset streak even if 2+ days gap
  */
 export function updateStreakOnCheckIn(
   currentStreak: number,
   longestStreak: number,
   lastCheckInDate: Date | null,
   newCheckInDate: Date,
+  freezeProtected: boolean = false,
   timezone: string = "UTC"
 ): StreakResult {
   const today = getStartOfDay(newCheckInDate, timezone);
@@ -191,6 +193,14 @@ export function updateStreakOnCheckIn(
 
   if (diffDays === 1) {
     // Consecutive day - increment streak
+    const newStreak = currentStreak + 1;
+    return {
+      currentStreak: newStreak,
+      longestStreak: Math.max(newStreak, longestStreak),
+      lastCheckInDate: newCheckInDate,
+    };
+  } else if (diffDays === 2 && freezeProtected) {
+    // Missed one day but freeze protected - increment streak
     const newStreak = currentStreak + 1;
     return {
       currentStreak: newStreak,

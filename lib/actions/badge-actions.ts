@@ -50,10 +50,12 @@ export async function getUserBadges(): Promise<{
 
   const { data, error } = await supabase
     .from("user_badges")
-    .select(`
+    .select(
+      `
       *,
       badge:badges(*)
-    `)
+    `
+    )
     .eq("user_id", user.id)
     .order("earned_at", { ascending: false });
 
@@ -62,10 +64,11 @@ export async function getUserBadges(): Promise<{
   }
 
   // Transform data to match UserBadgeWithDetails type
-  const badges = data?.map((item) => ({
-    ...item,
-    badge: item.badge as Badge,
-  })) || [];
+  const badges =
+    data?.map((item) => ({
+      ...item,
+      badge: item.badge as Badge,
+    })) || [];
 
   return { success: true, data: badges };
 }
@@ -90,10 +93,12 @@ export async function getRecentBadges(limit: number = 5): Promise<{
 
   const { data, error } = await supabase
     .from("user_badges")
-    .select(`
+    .select(
+      `
       *,
       badge:badges(*)
-    `)
+    `
+    )
     .eq("user_id", user.id)
     .order("earned_at", { ascending: false })
     .limit(limit);
@@ -102,10 +107,11 @@ export async function getRecentBadges(limit: number = 5): Promise<{
     return { success: false, error: error.message };
   }
 
-  const badges = data?.map((item) => ({
-    ...item,
-    badge: item.badge as Badge,
-  })) || [];
+  const badges =
+    data?.map((item) => ({
+      ...item,
+      badge: item.badge as Badge,
+    })) || [];
 
   return { success: true, data: badges };
 }
@@ -122,9 +128,7 @@ export interface BadgeCheckContext {
  * Check and award any earned badges for the current user
  * Returns newly awarded badges
  */
-export async function checkAndAwardBadges(
-  context: BadgeCheckContext
-): Promise<{
+export async function checkAndAwardBadges(context: BadgeCheckContext): Promise<{
   success: boolean;
   newBadges?: Badge[];
   error?: string;
@@ -273,10 +277,7 @@ export async function getBadgeProgress(): Promise<{
 
   const badgeProgress = (allBadges || []).map((badge) => {
     const earned = earnedBadgesMap.has(badge.id);
-    const currentProgress = getProgressForCriteria(
-      badge.criteria_type,
-      stats
-    );
+    const currentProgress = getProgressForCriteria(badge.criteria_type, stats);
     const progressPercent = Math.min(
       (currentProgress / badge.criteria_value) * 100,
       100

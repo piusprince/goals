@@ -8,7 +8,14 @@ import {
   hasCheckedInToday,
   updateStreakOnCheckIn,
 } from "@/lib/utils/streak-calculator";
-import { checkAndAwardBadges, BadgeCheckContext } from "@/lib/actions/badge-actions";
+import {
+  checkAndAwardBadges,
+  BadgeCheckContext,
+} from "@/lib/actions/badge-actions";
+import {
+  awardStreakFreeze,
+  useStreakFreeze,
+} from "@/lib/actions/streak-freeze-actions";
 import type { CheckIn, Badge } from "@/lib/supabase/types";
 
 export type CheckInActionState = {
@@ -136,16 +143,34 @@ export async function createCheckIn(
 
   // For habit goals, update streak
   if (goal.type === "habit") {
+    // Check if a streak freeze was used (active yesterday but no check-in)
+    const freezeResult = await useStreakFreeze(goalId);
+    const freezeProtected = freezeResult.freezeUsed;
+
     const streakResult = updateStreakOnCheckIn(
       goal.current_streak || 0,
       goal.longest_streak || 0,
       goal.last_check_in_date ? new Date(goal.last_check_in_date) : null,
-      new Date()
+      new Date(),
+      freezeProtected // Pass freeze protection status
     );
 
     goalUpdate.current_streak = streakResult.currentStreak;
     goalUpdate.longest_streak = streakResult.longestStreak;
     goalUpdate.last_check_in_date = new Date().toISOString().split("T")[0];
+
+    // Award streak freeze on 7-day milestones
+    if (
+      streakResult.currentStreak > 0 &&
+      streakResult.currentStreak % 7 === 0
+    ) {
+      try {
+        await awardStreakFreeze(goalId, streakResult.currentStreak);
+      } catch (e) {
+        console.error("Error awarding streak freeze:", e);
+        // Don't fail the check-in
+      }
+    }
   }
 
   // Update the goal
@@ -175,7 +200,8 @@ export async function createCheckIn(
       .not("completed_at", "is", null);
 
     const badgeContext: BadgeCheckContext = {
-      streakDays: (goalUpdate.current_streak as number) || goal.current_streak || 0,
+      streakDays:
+        (goalUpdate.current_streak as number) || goal.current_streak || 0,
       totalCheckIns: totalCheckIns || 0,
       goalsCompleted: completedGoals?.length || 0,
       goalId,
@@ -197,10 +223,12 @@ export async function createCheckIn(
   let message = isAutoCompleted
     ? "🎉 Goal completed! Congratulations!"
     : "Check-in recorded!";
-  
+
   if (newBadges.length > 0) {
     const badgeNames = newBadges.map((b) => b.name).join(", ");
-    message += ` 🏆 New badge${newBadges.length > 1 ? "s" : ""}: ${badgeNames}!`;
+    message += ` 🏆 New badge${
+      newBadges.length > 1 ? "s" : ""
+    }: ${badgeNames}!`;
   }
 
   return {
@@ -348,10 +376,12 @@ export async function quickCheckIn(
 
   // Build success message
   let message = `🔥 Streak: ${streakResult.currentStreak} days!`;
-  
+
   if (newBadges.length > 0) {
     const badgeNames = newBadges.map((b) => b.name).join(", ");
-    message += ` 🏆 New badge${newBadges.length > 1 ? "s" : ""}: ${badgeNames}!`;
+    message += ` 🏆 New badge${
+      newBadges.length > 1 ? "s" : ""
+    }: ${badgeNames}!`;
   }
 
   return {
