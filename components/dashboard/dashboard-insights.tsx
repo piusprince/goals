@@ -6,7 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   AnalyticsUpIcon,
   Calendar01Icon,
-  TrophyIcon,
+  Award01Icon,
   CheckmarkSquare02Icon,
 } from "@hugeicons/core-free-icons";
 import type { DashboardInsights as DashboardInsightsType } from "@/lib/actions/insights-actions";
@@ -89,7 +89,7 @@ export function DashboardInsights({
           {/* Most Consistent Goal */}
           {insights.mostConsistentGoal ? (
             <InsightItem
-              icon={TrophyIcon}
+              icon={Award01Icon}
               label="Most Consistent"
               value={insights.mostConsistentGoal.title}
               subtitle={`${insights.mostConsistentGoal.checkIns} check-ins this week`}
@@ -97,7 +97,7 @@ export function DashboardInsights({
             />
           ) : (
             <InsightItem
-              icon={TrophyIcon}
+              icon={Award01Icon}
               label="Most Consistent"
               value="No data yet"
               subtitle="Start checking in to see insights"

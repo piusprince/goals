@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createCheckIn, type CheckInActionState } from "@/lib/actions/check-in-actions";
+import {
+  createCheckIn,
+  type CheckInActionState,
+} from "@/lib/actions/check-in-actions";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   CheckmarkCircle01Icon,
@@ -53,7 +56,7 @@ export function CheckInForm({
   useEffect(() => {
     if (state.success) {
       onSuccess?.();
-      
+
       // Show badge toast if new badges were earned
       if (state.newBadges && state.newBadges.length > 0) {
         showBadgeToast(state.newBadges);
@@ -104,7 +107,9 @@ export function CheckInForm({
               name="value"
               type="number"
               value={value}
-              onChange={(e) => setValue(Math.max(1, Number.parseInt(e.target.value) || 1))}
+              onChange={(e) =>
+                setValue(Math.max(1, Number.parseInt(e.target.value) || 1))
+              }
               className="w-24 text-center"
               min={1}
               max={remaining || 10000}
@@ -172,7 +177,10 @@ export function CheckInForm({
         {isPending && "Saving..."}
         {!isPending && goalType === "habit" && (
           <>
-            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="mr-2 h-4 w-4" />
+            <HugeiconsIcon
+              icon={CheckmarkCircle01Icon}
+              className="mr-2 h-4 w-4"
+            />
             Check In
           </>
         )}

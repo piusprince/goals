@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Goal, CheckIn } from "@/lib/supabase/types";
+import { Goal, CheckIn, StreakFreeze } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,17 +37,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CheckInForm } from "./check-in-form";
 import { CheckInList } from "./check-in-list";
-import {
-  StreakDisplay,
-  ProgressSummary,
-  ProgressChart,
-} from "./progress";
+import { StreakDisplay, ProgressSummary, ProgressChart } from "./progress";
+import { StreakFreezeToggle } from "./streak-freeze-toggle";
+import { InsightsCard } from "./insights-card";
+import type { GoalInsights } from "@/lib/actions/insights-actions";
 
 interface GoalDetailProps {
   goal: Goal;
   checkIns?: CheckIn[];
   hasCheckedInToday?: boolean;
   totalCheckIns?: number;
+  streakFreeze?: StreakFreeze | null;
+  insights?: GoalInsights | null;
 }
 
 const typeIcons = {
@@ -73,11 +74,13 @@ const categoryColors: Record<string, string> = {
   other: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100",
 };
 
-export function GoalDetail({ 
-  goal, 
-  checkIns = [], 
+export function GoalDetail({
+  goal,
+  checkIns = [],
   hasCheckedInToday = false,
   totalCheckIns = 0,
+  streakFreeze = null,
+  insights = null,
 }: Readonly<GoalDetailProps>) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -244,6 +247,11 @@ export function GoalDetail({
                 goalType="target"
                 totalCount={totalCheckIns}
               />
+
+              {/* Insights */}
+              {insights && (
+                <InsightsCard insights={insights} goalType="target" />
+              )}
             </div>
           )}
 
@@ -257,6 +265,13 @@ export function GoalDetail({
                 hasCheckedInToday={hasCheckedInToday}
               />
 
+              {/* Streak Freeze Toggle */}
+              <StreakFreezeToggle
+                goalId={goal.id}
+                available={streakFreeze?.available ?? 0}
+                activeUntil={streakFreeze?.active_until ?? null}
+              />
+
               {/* Check-in Form */}
               <CheckInForm
                 goalId={goal.id}
@@ -266,10 +281,7 @@ export function GoalDetail({
               />
 
               {/* Progress Chart (Calendar Heatmap) */}
-              <ProgressChart
-                checkIns={checkIns}
-                goalType="habit"
-              />
+              <ProgressChart checkIns={checkIns} goalType="habit" />
 
               {/* Recent Check-ins */}
               <CheckInList
@@ -278,6 +290,11 @@ export function GoalDetail({
                 goalType="habit"
                 totalCount={totalCheckIns}
               />
+
+              {/* Insights */}
+              {insights && (
+                <InsightsCard insights={insights} goalType="habit" />
+              )}
             </div>
           )}
 

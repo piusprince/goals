@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Home01Icon,
-  UserGroupIcon,
+  AnalyticsUpIcon,
   ArchiveIcon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
@@ -19,9 +19,9 @@ const navItems = [
     icon: Home01Icon,
   },
   {
-    name: "Shared",
-    href: "/shared",
-    icon: UserGroupIcon,
+    name: "Summary",
+    href: "/summary",
+    icon: AnalyticsUpIcon,
   },
   {
     name: "Archive",
