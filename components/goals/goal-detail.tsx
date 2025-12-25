@@ -4,17 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Goal } from "@/lib/supabase/types";
+import { Goal, CheckIn } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 import {
   deleteGoal,
   archiveGoal,
   toggleGoalComplete,
-  updateGoalProgress,
 } from "@/lib/actions/goal-actions";
 import { cn } from "@/lib/utils";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -26,8 +23,6 @@ import {
   CheckmarkCircle01Icon,
   Target01Icon,
   RepeatIcon,
-  Add01Icon,
-  Remove01Icon,
 } from "@hugeicons/core-free-icons";
 import {
   AlertDialog,
@@ -40,9 +35,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { CheckInForm } from "./check-in-form";
+import { CheckInList } from "./check-in-list";
+import {
+  StreakDisplay,
+  ProgressSummary,
+  ProgressChart,
+} from "./progress";
 
 interface GoalDetailProps {
   goal: Goal;
+  checkIns?: CheckIn[];
+  hasCheckedInToday?: boolean;
+  totalCheckIns?: number;
 }
 
 const typeIcons = {
@@ -68,7 +73,12 @@ const categoryColors: Record<string, string> = {
   other: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100",
 };
 
-export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
+export function GoalDetail({ 
+  goal, 
+  checkIns = [], 
+  hasCheckedInToday = false,
+  totalCheckIns = 0,
+}: Readonly<GoalDetailProps>) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
@@ -76,14 +86,8 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
 
   // Computed from completed_at timestamp
   const isCompleted = goal.completed_at !== null;
-  const [currentValue, setCurrentValue] = useState(goal.current_value);
-  const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
 
   const Icon = typeIcons[goal.type];
-  const progress =
-    goal.type === "target" && goal.target_value
-      ? Math.min(100, Math.round((currentValue / goal.target_value) * 100))
-      : 0;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -119,17 +123,8 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
     setIsToggling(false);
   };
 
-  const handleUpdateProgress = async (newValue: number) => {
-    if (newValue < 0) return;
-    setCurrentValue(newValue);
-    setIsUpdatingProgress(true);
-    const result = await updateGoalProgress(goal.id, newValue);
-    if (result.success) {
-      toast.success(result.message);
-    } else {
-      toast.error(result.message);
-    }
-    setIsUpdatingProgress(false);
+  const handleCheckInSuccess = () => {
+    router.refresh();
   };
 
   return (
@@ -216,54 +211,73 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
             </div>
           )}
 
-          {/* Target goal: Progress tracker */}
+          {/* Target goal: Progress tracker with check-ins */}
           {goal.type === "target" && goal.target_value && (
-            <div className="space-y-4 rounded-lg border p-4">
-              <div>
-                <h3 className="font-medium">Progress</h3>
-                <p className="text-sm text-muted-foreground">
-                  {currentValue} / {goal.target_value} ({progress}%)
-                </p>
-              </div>
-              <Progress value={progress} className="h-3" />
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleUpdateProgress(currentValue - 1)}
-                  disabled={currentValue <= 0 || isUpdatingProgress}
-                >
-                  <HugeiconsIcon icon={Remove01Icon} className="h-4 w-4" />
-                </Button>
-                <Input
-                  type="number"
-                  value={currentValue}
-                  onChange={(e) =>
-                    handleUpdateProgress(Number.parseInt(e.target.value) || 0)
-                  }
-                  className="w-24 text-center"
-                  min={0}
-                  disabled={isUpdatingProgress}
+            <div className="space-y-6">
+              {/* Progress Summary */}
+              <ProgressSummary
+                goal={goal}
+                hasCheckedInToday={hasCheckedInToday}
+              />
+
+              {/* Check-in Form */}
+              <CheckInForm
+                goalId={goal.id}
+                goalType="target"
+                hasCheckedInToday={hasCheckedInToday}
+                onSuccess={handleCheckInSuccess}
+              />
+
+              {/* Progress Chart */}
+              {checkIns.length > 0 && (
+                <ProgressChart
+                  checkIns={checkIns}
+                  goalType="target"
+                  targetValue={goal.target_value}
                 />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleUpdateProgress(currentValue + 1)}
-                  disabled={isUpdatingProgress}
-                >
-                  <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" />
-                </Button>
-              </div>
+              )}
+
+              {/* Recent Check-ins */}
+              <CheckInList
+                checkIns={checkIns.slice(0, 5)}
+                goalId={goal.id}
+                goalType="target"
+                totalCount={totalCheckIns}
+              />
             </div>
           )}
 
-          {/* Habit goal */}
+          {/* Habit goal: Streak and check-ins */}
           {goal.type === "habit" && (
-            <div className="rounded-lg border p-4">
-              <h3 className="font-medium">Habit Tracking</h3>
-              <p className="text-sm text-muted-foreground">
-                Habit check-ins will be available in Phase 2
-              </p>
+            <div className="space-y-6">
+              {/* Streak Display */}
+              <StreakDisplay
+                currentStreak={goal.current_streak || 0}
+                longestStreak={goal.longest_streak || 0}
+                hasCheckedInToday={hasCheckedInToday}
+              />
+
+              {/* Check-in Form */}
+              <CheckInForm
+                goalId={goal.id}
+                goalType="habit"
+                hasCheckedInToday={hasCheckedInToday}
+                onSuccess={handleCheckInSuccess}
+              />
+
+              {/* Progress Chart (Calendar Heatmap) */}
+              <ProgressChart
+                checkIns={checkIns}
+                goalType="habit"
+              />
+
+              {/* Recent Check-ins */}
+              <CheckInList
+                checkIns={checkIns.slice(0, 5)}
+                goalId={goal.id}
+                goalType="habit"
+                totalCount={totalCheckIns}
+              />
             </div>
           )}
 

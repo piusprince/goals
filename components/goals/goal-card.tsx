@@ -16,6 +16,7 @@ import {
 
 interface GoalCardProps {
   goal: Goal;
+  hasCheckedInToday?: boolean;
 }
 
 const typeIcons = {
@@ -41,7 +42,7 @@ const categoryColors: Record<string, string> = {
   other: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100",
 };
 
-export function GoalCard({ goal }: Readonly<GoalCardProps>) {
+export function GoalCard({ goal, hasCheckedInToday = false }: Readonly<GoalCardProps>) {
   const Icon = typeIcons[goal.type];
   const isCompleted = goal.completed_at !== null;
 
@@ -127,8 +128,26 @@ export function GoalCard({ goal }: Readonly<GoalCardProps>) {
             )}
 
             {goal.type === "habit" && (
-              <div className="text-sm text-muted-foreground">
-                Track your daily habit
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Streak</span>
+                  <span className="flex items-center gap-1 font-medium">
+                    {goal.current_streak > 0 && (
+                      <span className="text-orange-500">🔥</span>
+                    )}
+                    {goal.current_streak || 0} days
+                  </span>
+                </div>
+                {hasCheckedInToday ? (
+                  <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3" />
+                    <span>Done today</span>
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">
+                    Not checked in today
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
