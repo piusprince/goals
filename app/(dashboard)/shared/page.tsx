@@ -1,26 +1,45 @@
-import { HugeiconsIcon } from "@hugeicons/react";
-import { UserGroupIcon } from "@hugeicons/core-free-icons";
+import { createServerClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { getSharedGoals } from "@/lib/actions/goal-actions";
+import { getPendingInviteCount } from "@/lib/actions/sharing-actions";
+import { PageTransition } from "@/components/layout/page-transition";
+import { SharedGoalsContent } from "./shared-goals-content";
 
-export default function SharedPage() {
+export default async function SharedGoalsPage() {
+  const supabase = await createServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  // Fetch all shared goals and pending invite count
+  const [sharedGoalsResult, pendingInvitesResult] = await Promise.all([
+    getSharedGoals("all"),
+    getPendingInviteCount(),
+  ]);
+
+  const sharedGoals = sharedGoalsResult.success
+    ? sharedGoalsResult.data ?? []
+    : [];
+  const pendingInviteCount = pendingInvitesResult.success
+    ? pendingInvitesResult.data ?? 0
+    : 0;
+
+  // Separate owned and member goals
+  const ownedGoals = sharedGoals.filter((g) => g.owner_id === user.id);
+  const memberGoals = sharedGoals.filter((g) => g.owner_id !== user.id);
+
   return (
-    <div className="py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Shared Goals</h1>
-        <p className="text-muted-foreground">Goals shared with you</p>
-      </div>
-
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="mb-4 rounded-full bg-muted p-4">
-          <HugeiconsIcon
-            icon={UserGroupIcon}
-            className="h-12 w-12 text-muted-foreground"
-          />
-        </div>
-        <h2 className="mb-2 text-xl font-semibold">Coming Soon</h2>
-        <p className="max-w-sm text-muted-foreground">
-          Goal sharing and collaboration features will be available in Phase 3.
-        </p>
-      </div>
-    </div>
+    <PageTransition>
+      <SharedGoalsContent
+        ownedGoals={ownedGoals}
+        memberGoals={memberGoals}
+        pendingInviteCount={pendingInviteCount}
+      />
+    </PageTransition>
   );
 }

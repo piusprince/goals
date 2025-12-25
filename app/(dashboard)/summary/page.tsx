@@ -22,7 +22,10 @@ import {
 } from "@/lib/actions/insights-actions";
 
 function formatDateRange(startDate: Date, endDate: Date): string {
-  const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+  };
   const startStr = startDate.toLocaleDateString("en-US", options);
   const endStr = endDate.toLocaleDateString("en-US", options);
   return `${startStr} - ${endStr}`;
@@ -43,7 +46,13 @@ interface StatCardProps {
   iconColor?: string;
 }
 
-function StatCard({ icon: Icon, label, value, subtitle, iconColor }: Readonly<StatCardProps>) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  subtitle,
+  iconColor,
+}: Readonly<StatCardProps>) {
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
@@ -58,7 +67,9 @@ function StatCard({ icon: Icon, label, value, subtitle, iconColor }: Readonly<St
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted-foreground">{label}</p>
           <p className="text-2xl font-bold">{value}</p>
-          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -66,7 +77,9 @@ function StatCard({ icon: Icon, label, value, subtitle, iconColor }: Readonly<St
 }
 
 export default function SummaryPage() {
-  const [weekStart, setWeekStart] = useState<Date>(() => getWeekStartDate(new Date()));
+  const [weekStart, setWeekStart] = useState<Date>(() =>
+    getWeekStartDate(new Date())
+  );
   const [summary, setSummary] = useState<WeeklySummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +87,8 @@ export default function SummaryPage() {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 6);
 
-  const isCurrentWeek = getWeekStartDate(new Date()).getTime() === weekStart.getTime();
+  const isCurrentWeek =
+    getWeekStartDate(new Date()).getTime() === weekStart.getTime();
 
   const navigateWeek = useCallback((direction: "prev" | "next") => {
     setWeekStart((prev) => {
@@ -184,10 +198,13 @@ export default function SummaryPage() {
                     <HugeiconsIcon icon={Award01Icon} className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Most Active Goal</p>
+                    <p className="text-sm text-muted-foreground">
+                      Most Active Goal
+                    </p>
                     <p className="font-semibold">{summary.topGoal.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      {summary.topGoal.checkIns} check-in{summary.topGoal.checkIns !== 1 ? "s" : ""} this week
+                      {summary.topGoal.checkIns} check-in
+                      {summary.topGoal.checkIns !== 1 ? "s" : ""} this week
                     </p>
                   </div>
                 </CardContent>
@@ -199,7 +216,10 @@ export default function SummaryPage() {
               <Card className="mb-6">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <HugeiconsIcon icon={CrownIcon} className="h-5 w-5 text-primary" />
+                    <HugeiconsIcon
+                      icon={CrownIcon}
+                      className="h-5 w-5 text-primary"
+                    />
                     Achievements Earned
                   </CardTitle>
                 </CardHeader>
@@ -241,15 +261,19 @@ export default function SummaryPage() {
                             <span className="capitalize">{goal.category}</span>
                             <span>•</span>
                             <span className="capitalize">{goal.type}</span>
-                            {goal.type === "habit" && goal.currentStreak > 0 && (
-                              <>
-                                <span>•</span>
-                                <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
-                                  <HugeiconsIcon icon={FireIcon} className="h-3 w-3" />
-                                  {goal.currentStreak} day streak
-                                </span>
-                              </>
-                            )}
+                            {goal.type === "habit" &&
+                              goal.currentStreak > 0 && (
+                                <>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+                                    <HugeiconsIcon
+                                      icon={FireIcon}
+                                      className="h-3 w-3"
+                                    />
+                                    {goal.currentStreak} day streak
+                                  </span>
+                                </>
+                              )}
                           </div>
                         </div>
                         <div className="ml-4 flex flex-col items-end">
@@ -271,7 +295,10 @@ export default function SummaryPage() {
             {summary.totalCheckIns === 0 && (
               <div className="mt-6 rounded-lg border border-dashed p-8 text-center">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <HugeiconsIcon icon={Calendar01Icon} className="h-8 w-8 text-muted-foreground" />
+                  <HugeiconsIcon
+                    icon={Calendar01Icon}
+                    className="h-8 w-8 text-muted-foreground"
+                  />
                 </div>
                 <h3 className="mb-2 font-semibold">No Activity This Week</h3>
                 <p className="text-sm text-muted-foreground">

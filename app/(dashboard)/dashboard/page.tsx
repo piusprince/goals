@@ -45,18 +45,21 @@ export default async function DashboardPage({
 
   // Fetch today's check-in status for all goals
   const goalIds = goals?.map((g) => g.id) || [];
-  const todayCheckInStatus = goalIds.length > 0 
-    ? await getTodayCheckInStatus(goalIds) 
-    : {};
+  const todayCheckInStatus =
+    goalIds.length > 0 ? await getTodayCheckInStatus(goalIds) : {};
 
   // Fetch dashboard insights
   const insightsResult = await getDashboardInsights();
 
   // Calculate stats
   const totalGoals = goals?.length || 0;
-  const completedGoals = goals?.filter((g) => g.completed_at !== null).length || 0;
-  const activeStreaks = goals?.filter((g) => g.type === "habit" && (g.current_streak || 0) > 0).length || 0;
-  const todayCheckIns = Object.values(todayCheckInStatus).filter(Boolean).length;
+  const completedGoals =
+    goals?.filter((g) => g.completed_at !== null).length || 0;
+  const activeStreaks =
+    goals?.filter((g) => g.type === "habit" && (g.current_streak || 0) > 0)
+      .length || 0;
+  const todayCheckIns =
+    Object.values(todayCheckInStatus).filter(Boolean).length;
 
   return (
     <PageTransition>
@@ -88,8 +91,8 @@ export default async function DashboardPage({
         {goals && goals.length > 0 ? (
           <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {goals.map((goal) => (
-              <GoalCard 
-                key={goal.id} 
+              <GoalCard
+                key={goal.id}
                 goal={goal}
                 hasCheckedInToday={todayCheckInStatus[goal.id] ?? false}
               />
