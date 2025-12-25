@@ -84,7 +84,7 @@ export function InviteList({ invites, onRevoke }: InviteListProps) {
                 {invite.role}
               </span>
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock01Icon className="h-3 w-3" />
+                <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3" />
                 {getExpirationText(invite.expires_at)}
               </span>
             </div>
@@ -98,7 +98,7 @@ export function InviteList({ invites, onRevoke }: InviteListProps) {
               title="Copy invite link"
               className="h-8 w-8"
             >
-              <Copy01Icon className="h-4 w-4" />
+              <HugeiconsIcon icon={Copy01Icon} className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
@@ -108,7 +108,7 @@ export function InviteList({ invites, onRevoke }: InviteListProps) {
               title="Revoke invite"
               className="h-8 w-8 text-destructive hover:text-destructive"
             >
-              <Delete01Icon className="h-4 w-4" />
+              <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
             </Button>
           </div>
         </div>

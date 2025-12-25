@@ -130,10 +130,10 @@ export function SharedGoalCard({
                     >
                       <AvatarImage
                         src={member.user?.avatar_url || undefined}
-                        alt={member.user?.full_name || "Member"}
+                        alt={member.user?.display_name || "Member"}
                       />
                       <AvatarFallback className="text-xs">
-                        {member.user?.full_name?.charAt(0).toUpperCase() || "?"}
+                        {member.user?.display_name?.charAt(0).toUpperCase() || "?"}
                       </AvatarFallback>
                     </Avatar>
                   ))}
