@@ -1,7 +1,7 @@
 import { createMiddlewareClient } from "@/lib/supabase/middleware";
 import { type NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { response, user } = await createMiddlewareClient(request);
 
   const isAuthPage = request.nextUrl.pathname.startsWith("/login");
