@@ -338,3 +338,150 @@ export async function sendPushNotificationToCurrentUser(
 export async function getVapidPublicKey(): Promise<string | null> {
   return vapidPublicKey || null;
 }
+
+// ========================================
+// Sharing-related Notifications
+// ========================================
+
+/**
+ * Send notification when user is invited to a goal
+ */
+export async function sendInviteNotification(
+  inviteeEmail: string,
+  inviterName: string,
+  goalTitle: string,
+  inviteToken: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createServerClient();
+
+  // Find user by email
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", inviteeEmail)
+    .single();
+
+  if (!profile) {
+    // User not registered, can't send push notification
+    return { success: true }; // Not an error, just skip
+  }
+
+  const inviteUrl = `${
+    process.env.NEXT_PUBLIC_APP_URL || ""
+  }/invite/${inviteToken}`;
+
+  return sendPushNotification(profile.id, {
+    title: "Goal Invitation",
+    body: `${inviterName} invited you to collaborate on "${goalTitle}"`,
+    url: inviteUrl,
+    tag: `invite-${inviteToken}`,
+  });
+}
+
+/**
+ * Send notification to goal owner when invite is accepted
+ */
+export async function sendInviteAcceptedNotification(
+  ownerId: string,
+  accepterName: string,
+  goalTitle: string,
+  goalId: string
+): Promise<{ success: boolean; error?: string }> {
+  return sendPushNotification(ownerId, {
+    title: "Invite Accepted",
+    body: `${accepterName} joined your goal "${goalTitle}"`,
+    url: `/goals/${goalId}`,
+    tag: `invite-accepted-${goalId}`,
+  });
+}
+
+/**
+ * Send notification when a collaborator checks in (optional, based on preferences)
+ */
+export async function sendCollaboratorCheckInNotification(
+  goalId: string,
+  goalTitle: string,
+  checkerName: string,
+  checkerId: string,
+  value?: number
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createServerClient();
+
+  // Get all goal members except the checker
+  const { data: members } = await supabase
+    .from("goal_members")
+    .select("user_id")
+    .eq("goal_id", goalId)
+    .neq("user_id", checkerId);
+
+  if (!members || members.length === 0) {
+    return { success: true };
+  }
+
+  const body = value
+    ? `${checkerName} checked in +${value} on "${goalTitle}"`
+    : `${checkerName} checked in on "${goalTitle}"`;
+
+  // Send to all members
+  const results = await Promise.allSettled(
+    members.map((member) =>
+      sendPushNotification(member.user_id, {
+        title: "Collaborator Check-in",
+        body,
+        url: `/goals/${goalId}`,
+        tag: `checkin-${goalId}`,
+      })
+    )
+  );
+
+  const failedCount = results.filter((r) => r.status === "rejected").length;
+  return {
+    success: failedCount === 0,
+    error: failedCount > 0 ? `${failedCount} notifications failed` : undefined,
+  };
+}
+
+/**
+ * Send notification when a goal milestone is reached (50%, 100%)
+ */
+export async function sendMilestoneNotification(
+  goalId: string,
+  goalTitle: string,
+  milestone: 50 | 100
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createServerClient();
+
+  // Get all goal members
+  const { data: members } = await supabase
+    .from("goal_members")
+    .select("user_id")
+    .eq("goal_id", goalId);
+
+  if (!members || members.length === 0) {
+    return { success: true };
+  }
+
+  const title = milestone === 100 ? "🎉 Goal Completed!" : "🎯 Halfway There!";
+  const body =
+    milestone === 100
+      ? `Your goal "${goalTitle}" has been completed!`
+      : `Your goal "${goalTitle}" is 50% complete!`;
+
+  // Send to all members
+  const results = await Promise.allSettled(
+    members.map((member) =>
+      sendPushNotification(member.user_id, {
+        title,
+        body,
+        url: `/goals/${goalId}`,
+        tag: `milestone-${goalId}-${milestone}`,
+      })
+    )
+  );
+
+  const failedCount = results.filter((r) => r.status === "rejected").length;
+  return {
+    success: failedCount === 0,
+    error: failedCount > 0 ? `${failedCount} notifications failed` : undefined,
+  };
+}

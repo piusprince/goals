@@ -50,15 +50,41 @@ export async function createCheckIn(
     };
   }
 
-  // Get the goal to verify ownership and type
+  // Get the goal to verify access and type
+  // RLS policy filters based on ownership/membership
   const { data: goal, error: goalError } = await supabase
     .from("goals")
     .select("*")
     .eq("id", goalId)
-    .eq("owner_id", user.id)
     .single();
 
   if (goalError || !goal) {
+    return {
+      success: false,
+      message: "Goal not found",
+    };
+  }
+
+  // For shared goals, verify the user is an owner or collaborator
+  if (goal.is_shared && goal.owner_id !== user.id) {
+    const { data: membership } = await supabase
+      .from("goal_members")
+      .select("role")
+      .eq("goal_id", goalId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (
+      !membership ||
+      (membership.role !== "owner" && membership.role !== "collaborator")
+    ) {
+      return {
+        success: false,
+        message: "You don't have permission to check in on this goal",
+      };
+    }
+  } else if (!goal.is_shared && goal.owner_id !== user.id) {
+    // For personal goals, must be the owner
     return {
       success: false,
       message: "Goal not found",
@@ -258,15 +284,41 @@ export async function quickCheckIn(
     };
   }
 
-  // Get the goal to verify ownership and type
+  // Get the goal to verify access and type
+  // RLS policy filters based on ownership/membership
   const { data: goal, error: goalError } = await supabase
     .from("goals")
     .select("*")
     .eq("id", goalId)
-    .eq("owner_id", user.id)
     .single();
 
   if (goalError || !goal) {
+    return {
+      success: false,
+      message: "Goal not found",
+    };
+  }
+
+  // For shared goals, verify the user is an owner or collaborator
+  if (goal.is_shared && goal.owner_id !== user.id) {
+    const { data: membership } = await supabase
+      .from("goal_members")
+      .select("role")
+      .eq("goal_id", goalId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (
+      !membership ||
+      (membership.role !== "owner" && membership.role !== "collaborator")
+    ) {
+      return {
+        success: false,
+        message: "You don't have permission to check in on this goal",
+      };
+    }
+  } else if (!goal.is_shared && goal.owner_id !== user.id) {
+    // For personal goals, must be the owner
     return {
       success: false,
       message: "Goal not found",

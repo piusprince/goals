@@ -62,6 +62,8 @@ export async function createGoal(
     };
   }
 
+  const isShared = formData.get("is_shared") === "on";
+
   const { error } = await supabase
     .from("goals")
     .insert({
@@ -75,6 +77,7 @@ export async function createGoal(
       year: new Date().getFullYear(),
       is_archived: false,
       completed_at: null,
+      is_shared: isShared,
     })
     .select()
     .single();
@@ -343,4 +346,149 @@ export async function updateGoalProgress(
     success: true,
     message: "Progress updated!",
   };
+}
+
+/**
+ * Toggle a goal's shared status
+ */
+export async function toggleGoalShared(
+  goalId: string,
+  isShared: boolean
+): Promise<GoalActionState> {
+  const supabase = await createServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      success: false,
+      message: "You must be logged in",
+    };
+  }
+
+  // If turning off sharing, we should remove all non-owner members
+  if (!isShared) {
+    // First, remove all non-owner members
+    await supabase
+      .from("goal_members")
+      .delete()
+      .eq("goal_id", goalId)
+      .neq("role", "owner");
+
+    // Delete pending invites
+    await supabase.from("invites").delete().eq("goal_id", goalId);
+  }
+
+  // Update the goal
+  const { error } = await supabase
+    .from("goals")
+    .update({ is_shared: isShared })
+    .eq("id", goalId)
+    .eq("owner_id", user.id);
+
+  if (error) {
+    console.error("Error toggling shared status:", error);
+    return {
+      success: false,
+      message: "Failed to update sharing status. Please try again.",
+    };
+  }
+
+  // If enabling sharing, ensure owner is in goal_members
+  if (isShared) {
+    await supabase.from("goal_members").upsert(
+      {
+        goal_id: goalId,
+        user_id: user.id,
+        role: "owner",
+        accepted_at: new Date().toISOString(),
+      },
+      { onConflict: "goal_id,user_id" }
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/goals/${goalId}`);
+  revalidatePath("/shared");
+
+  return {
+    success: true,
+    message: isShared
+      ? "Goal is now shared! You can invite collaborators."
+      : "Goal is now private.",
+  };
+}
+
+/**
+ * Get all shared goals for the current user
+ */
+export async function getSharedGoals(
+  filter: "all" | "my-goals" | "joined" = "all"
+) {
+  const supabase = await createServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return [];
+  }
+
+  let query = supabase
+    .from("goals")
+    .select(
+      `
+      *,
+      members:goal_members(
+        id,
+        user_id,
+        role,
+        user:users(id, display_name, avatar_url)
+      )
+    `
+    )
+    .eq("is_shared", true)
+    .eq("is_archived", false);
+
+  if (filter === "my-goals") {
+    // Goals where user is owner
+    query = query.eq("owner_id", user.id);
+  } else if (filter === "joined") {
+    // Goals where user is a member but not owner
+    const { data: memberGoalIds } = await supabase
+      .from("goal_members")
+      .select("goal_id")
+      .eq("user_id", user.id);
+
+    const goalIds = memberGoalIds?.map((m) => m.goal_id) || [];
+
+    query = query.neq("owner_id", user.id).in("id", goalIds);
+  } else {
+    // All shared goals user has access to
+    // Either owner or member
+    const { data: memberGoalIds } = await supabase
+      .from("goal_members")
+      .select("goal_id")
+      .eq("user_id", user.id);
+
+    const goalIds = memberGoalIds?.map((m) => m.goal_id) || [];
+
+    if (goalIds.length > 0) {
+      query = query.or(`owner_id.eq.${user.id},id.in.(${goalIds.join(",")})`);
+    } else {
+      query = query.eq("owner_id", user.id);
+    }
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching shared goals:", error);
+    return [];
+  }
+
+  return data || [];
 }
