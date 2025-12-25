@@ -34,7 +34,10 @@ const types = [
   },
 ];
 
-export function GoalTypeSelector({ value, onChange }: Readonly<GoalTypeSelectorProps>) {
+export function GoalTypeSelector({
+  value,
+  onChange,
+}: Readonly<GoalTypeSelectorProps>) {
   return (
     <div className="grid grid-cols-3 gap-3">
       {types.map((type) => {

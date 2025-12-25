@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
 
-const emailSchema = z.string().email({ message: "Please enter a valid email address" });
+const emailSchema = z
+  .string()
+  .email({ message: "Please enter a valid email address" });
 
 interface MagicLinkFormProps {
   onSuccess?: () => void;
@@ -43,13 +46,16 @@ export function MagicLinkForm({ onSuccess }: Readonly<MagicLinkFormProps>) {
 
       if (signInError) {
         setError(signInError.message);
+        toast.error(signInError.message);
       } else {
         setSuccess(true);
+        toast.success("Magic link sent! Check your email.");
         onSuccess?.();
       }
     } catch (error) {
       console.error("Unexpected error:", error);
       setError("An unexpected error occurred. Please try again.");
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }

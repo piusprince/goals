@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Goal } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,39 +84,70 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    await deleteGoal(goal.id);
+    const result = await deleteGoal(goal.id);
+    if (!result.success) {
+      toast.error(result.message);
+      setIsDeleting(false);
+    }
+    // On success, redirect happens in the action
   };
 
   const handleArchive = async () => {
     setIsArchiving(true);
-    await archiveGoal(goal.id);
-    router.push("/dashboard");
+    const result = await archiveGoal(goal.id);
+    if (result.success) {
+      toast.success(result.message);
+      router.push("/dashboard");
+    } else {
+      toast.error(result.message);
+      setIsArchiving(false);
+    }
   };
 
   const handleToggleComplete = async () => {
     setIsToggling(true);
-    await toggleGoalComplete(goal.id, !goal.is_completed);
+    const result = await toggleGoalComplete(goal.id, !goal.is_completed);
+    if (result.success) {
+      toast.success(result.message);
+      router.refresh();
+    } else {
+      toast.error(result.message);
+    }
     setIsToggling(false);
-    router.refresh();
   };
 
   const handleUpdateProgress = async (newValue: number) => {
     if (newValue < 0) return;
     setCurrentValue(newValue);
     setIsUpdatingProgress(true);
-    await updateGoalProgress(goal.id, newValue);
+    const result = await updateGoalProgress(goal.id, newValue);
+    if (result.success) {
+      toast.success(result.message);
+    } else {
+      toast.error(result.message);
+    }
     setIsUpdatingProgress(false);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" render={<Link href="/dashboard" />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          render={(props) => <Link href="/dashboard" {...props} />}
+        >
           <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-2 h-4 w-4" />
           Back
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" render={<Link href={`/goals/${goal.id}/edit`} />}>
+          <Button
+            variant="outline"
+            size="sm"
+            render={(props) => (
+              <Link href={`/goals/${goal.id}/edit`} {...props} />
+            )}
+          >
             <HugeiconsIcon icon={PencilEdit01Icon} className="mr-2 h-4 w-4" />
             Edit
           </Button>

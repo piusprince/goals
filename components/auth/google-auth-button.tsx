@@ -10,7 +10,9 @@ interface GoogleAuthButtonProps {
   className?: string;
 }
 
-export function GoogleAuthButton({ className }: Readonly<GoogleAuthButtonProps>) {
+export function GoogleAuthButton({
+  className,
+}: Readonly<GoogleAuthButtonProps>) {
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createBrowserClient();
 

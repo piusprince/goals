@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { type ProfileFormData } from "@/lib/validations/profile-schema";
 import { updateProfile } from "@/lib/actions/profile-actions";
 import { Button } from "@/components/ui/button";
@@ -35,11 +36,14 @@ export function ProfileForm({ user }: Readonly<ProfileFormProps>) {
       if (result.error) {
         if (typeof result.error === "string") {
           setErrors({ _form: [result.error] });
+          toast.error(result.error);
         } else {
           setErrors(result.error);
+          toast.error("Please fix the errors below");
         }
       } else {
         setSuccessMessage("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
         router.refresh();
       }
     });

@@ -42,17 +42,20 @@ const categoryColors: Record<string, string> = {
 
 export function GoalCard({ goal }: Readonly<GoalCardProps>) {
   const Icon = typeIcons[goal.type];
-  
+
   const calculateProgress = () => {
     if (goal.type === "target" && goal.target_value) {
-      return Math.min(100, Math.round((goal.current_value / goal.target_value) * 100));
+      return Math.min(
+        100,
+        Math.round((goal.current_value / goal.target_value) * 100)
+      );
     }
     if (goal.type === "one-time" && goal.is_completed) {
       return 100;
     }
     return 0;
   };
-  
+
   const progress = calculateProgress();
 
   return (

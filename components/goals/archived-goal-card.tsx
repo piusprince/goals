@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Goal } from "@/lib/supabase/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -63,13 +64,24 @@ export function ArchivedGoalCard({ goal }: Readonly<ArchivedGoalCardProps>) {
 
   const handleRestore = async () => {
     setIsRestoring(true);
-    await unarchiveGoal(goal.id);
-    router.refresh();
+    const result = await unarchiveGoal(goal.id);
+    if (result.success) {
+      toast.success(result.message);
+      router.refresh();
+    } else {
+      toast.error(result.message);
+    }
+    setIsRestoring(false);
   };
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    await deleteGoal(goal.id);
+    const result = await deleteGoal(goal.id);
+    if (!result.success) {
+      toast.error(result.message);
+      setIsDeleting(false);
+    }
+    // On success, redirect happens in the action
   };
 
   return (

@@ -20,7 +20,7 @@ export function EmptyState({ year }: Readonly<EmptyStateProps>) {
         Start your journey by creating your first goal. What would you like to
         achieve this year?
       </p>
-      <Button render={<Link href="/goals/new" />}>
+      <Button render={(props) => <Link href="/goals/new" {...props} />}>
         Create Your First Goal
       </Button>
     </div>
