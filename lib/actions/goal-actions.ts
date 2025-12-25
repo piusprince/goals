@@ -4,6 +4,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { goalFormSchema } from "@/lib/validations/goal-schema";
+import { getFieldErrors } from "@/lib/validations/utils";
 
 export type GoalActionState = {
   success: boolean;
@@ -47,7 +48,7 @@ export async function createGoal(
   const validationResult = goalFormSchema.safeParse(rawData);
 
   if (!validationResult.success) {
-    const fieldErrors = validationResult.error.flatten().fieldErrors;
+    const fieldErrors = getFieldErrors(validationResult.error);
     return {
       success: false,
       message: "Please fix the errors below",
@@ -67,13 +68,13 @@ export async function createGoal(
       title: validationResult.data.title,
       description: validationResult.data.description || null,
       type: validationResult.data.type,
-      category: validationResult.data.category || null,
+      category: validationResult.data.category || "other",
       target_value: validationResult.data.target_value || null,
       current_value: 0,
       owner_id: user.id,
       year: new Date().getFullYear(),
       is_archived: false,
-      is_completed: false,
+      completed_at: null,
     })
     .select()
     .single();
@@ -121,7 +122,7 @@ export async function updateGoal(
   const validationResult = goalFormSchema.safeParse(rawData);
 
   if (!validationResult.success) {
-    const fieldErrors = validationResult.error.flatten().fieldErrors;
+    const fieldErrors = getFieldErrors(validationResult.error);
     return {
       success: false,
       message: "Please fix the errors below",
@@ -141,7 +142,7 @@ export async function updateGoal(
       title: validationResult.data.title,
       description: validationResult.data.description || null,
       type: validationResult.data.type,
-      category: validationResult.data.category || null,
+      category: validationResult.data.category || "other",
       target_value: validationResult.data.target_value || null,
     })
     .eq("id", goalId)
@@ -283,7 +284,7 @@ export async function toggleGoalComplete(
 
   const { error } = await supabase
     .from("goals")
-    .update({ is_completed: isCompleted })
+    .update({ completed_at: isCompleted ? new Date().toISOString() : null })
     .eq("id", goalId)
     .eq("owner_id", user.id);
 
