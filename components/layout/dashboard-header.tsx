@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ThemeToggle } from "@/components/theme";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -65,15 +66,18 @@ export function DashboardHeader({ user }: Readonly<DashboardHeaderProps>) {
           </Select>
         </div>
 
-        <Link href="/profile">
-          <Avatar className="h-8 w-8 sm:h-9 sm:w-9 cursor-pointer ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-all hover:ring-primary/40">
-            <AvatarImage
-              src={user.avatar_url || undefined}
-              alt={user.display_name}
-            />
-            <AvatarFallback className="text-sm">{initials}</AvatarFallback>
-          </Avatar>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link href="/profile">
+            <Avatar className="h-8 w-8 sm:h-9 sm:w-9 cursor-pointer ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-all hover:ring-primary/40">
+              <AvatarImage
+                src={user.avatar_url || undefined}
+                alt={user.display_name}
+              />
+              <AvatarFallback className="text-sm">{initials}</AvatarFallback>
+            </Avatar>
+          </Link>
+        </div>
       </div>
     </header>
   );

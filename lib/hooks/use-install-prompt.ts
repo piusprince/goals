@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -34,6 +34,51 @@ interface UseInstallPromptReturn {
 const DISMISS_KEY = "pwa-install-dismissed";
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
+// Dismiss state management using external store pattern
+let dismissListeners: Array<() => void> = [];
+let currentDismissed = false;
+
+function subscribeToDismiss(callback: () => void): () => void {
+  dismissListeners.push(callback);
+  return () => {
+    dismissListeners = dismissListeners.filter((l) => l !== callback);
+  };
+}
+
+function getDismissSnapshot(): boolean {
+  return currentDismissed;
+}
+
+function getDismissServerSnapshot(): boolean {
+  return false;
+}
+
+function setDismissed(value: boolean): void {
+  currentDismissed = value;
+  dismissListeners.forEach((l) => l());
+}
+
+// Initialize dismiss state
+if (typeof globalThis.window !== "undefined") {
+  const dismissedAt = localStorage.getItem(DISMISS_KEY);
+  if (dismissedAt) {
+    const dismissedTime = Number.parseInt(dismissedAt, 10);
+    currentDismissed = Date.now() - dismissedTime < DISMISS_DURATION;
+    if (!currentDismissed) {
+      localStorage.removeItem(DISMISS_KEY);
+    }
+  }
+}
+
+function checkInstalled(): boolean {
+  if (typeof globalThis.window === "undefined") return false;
+  return (
+    globalThis.matchMedia?.("(display-mode: standalone)").matches ||
+    // @ts-expect-error - iOS Safari specific
+    globalThis.navigator?.standalone === true
+  );
+}
+
 /**
  * Hook to handle PWA install prompt
  * Stores the beforeinstallprompt event and provides methods to trigger it
@@ -41,40 +86,16 @@ const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 export function useInstallPrompt(): UseInstallPromptReturn {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
-
-  // Check if dismissed recently
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const dismissedAt = localStorage.getItem(DISMISS_KEY);
-    if (dismissedAt) {
-      const dismissedTime = parseInt(dismissedAt, 10);
-      if (Date.now() - dismissedTime < DISMISS_DURATION) {
-        setIsDismissed(true);
-      } else {
-        localStorage.removeItem(DISMISS_KEY);
-      }
-    }
-  }, []);
-
-  // Check if already installed
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Check if running in standalone mode (already installed)
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      // @ts-expect-error - iOS Safari specific
-      window.navigator.standalone === true;
-
-    setIsInstalled(isStandalone);
-  }, []);
+  const [isInstalled, setIsInstalled] = useState(checkInstalled);
+  const isDismissed = useSyncExternalStore(
+    subscribeToDismiss,
+    getDismissSnapshot,
+    getDismissServerSnapshot
+  );
 
   // Listen for beforeinstallprompt event
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (globalThis.window === undefined) return;
 
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       // Prevent the mini-infobar from appearing on mobile
@@ -88,15 +109,18 @@ export function useInstallPrompt(): UseInstallPromptReturn {
       setDeferredPrompt(null);
     };
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    window.addEventListener("appinstalled", handleAppInstalled);
+    globalThis.addEventListener(
+      "beforeinstallprompt",
+      handleBeforeInstallPrompt
+    );
+    globalThis.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener(
+      globalThis.removeEventListener(
         "beforeinstallprompt",
         handleBeforeInstallPrompt
       );
-      window.removeEventListener("appinstalled", handleAppInstalled);
+      globalThis.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
@@ -122,7 +146,7 @@ export function useInstallPrompt(): UseInstallPromptReturn {
 
   const dismissPrompt = useCallback(() => {
     localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    setIsDismissed(true);
+    setDismissed(true);
   }, []);
 
   return {

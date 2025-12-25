@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface UseServiceWorkerReturn {
   /** Whether a new service worker is waiting to activate */
@@ -19,16 +19,25 @@ interface UseServiceWorkerReturn {
  */
 export function useServiceWorker(): UseServiceWorkerReturn {
   const [hasUpdate, setHasUpdate] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(() => {
+    // Initial state based on whether SW is supported
+    return globalThis.window !== undefined && "serviceWorker" in navigator;
+  });
   const [error, setError] = useState<Error | null>(null);
   const [registration, setRegistration] =
     useState<ServiceWorkerRegistration | null>(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
-      setIsRegistering(false);
+    // Skip if not supported or already initialized
+    if (globalThis.window === undefined || !("serviceWorker" in navigator)) {
       return;
     }
+
+    if (initialized.current) return;
+    initialized.current = true;
+
+    let checkInterval: ReturnType<typeof setInterval>;
 
     const registerServiceWorker = async () => {
       try {
@@ -55,18 +64,15 @@ export function useServiceWorker(): UseServiceWorkerReturn {
               newWorker.state === "installed" &&
               navigator.serviceWorker.controller
             ) {
-              // New service worker is ready
               setHasUpdate(true);
             }
           });
         });
 
         // Periodically check for updates (every hour)
-        const checkInterval = setInterval(() => {
+        checkInterval = setInterval(() => {
           reg.update().catch(console.error);
         }, 60 * 60 * 1000);
-
-        return () => clearInterval(checkInterval);
       } catch (err) {
         console.error("Service worker registration failed:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -78,7 +84,7 @@ export function useServiceWorker(): UseServiceWorkerReturn {
 
     // Handle controller change (new SW activated)
     const handleControllerChange = () => {
-      window.location.reload();
+      globalThis.location.reload();
     };
 
     navigator.serviceWorker.addEventListener(
@@ -87,6 +93,7 @@ export function useServiceWorker(): UseServiceWorkerReturn {
     );
 
     return () => {
+      if (checkInterval) clearInterval(checkInterval);
       navigator.serviceWorker.removeEventListener(
         "controllerchange",
         handleControllerChange

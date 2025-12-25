@@ -55,7 +55,9 @@ export function InstallPrompt({ className }: InstallPromptProps) {
 
         {/* Content */}
         <div className="flex-1 space-y-1">
-          <h3 className="font-semibold text-foreground">Install Goals Tracker</h3>
+          <h3 className="font-semibold text-foreground">
+            Install Goals Tracker
+          </h3>
           <p className="text-sm text-muted-foreground">
             Add to your home screen for quick access and offline support.
           </p>

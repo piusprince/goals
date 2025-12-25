@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="goalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4883F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B86B25;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="96" cy="96" r="88" fill="url(#goalGradient)"/>
+  <!-- Target/Goal icon -->
+  <circle cx="96" cy="96" r="48" fill="none" stroke="white" stroke-width="6"/>
+  <circle cx="96" cy="96" r="28" fill="none" stroke="white" stroke-width="6"/>
+  <circle cx="96" cy="96" r="10" fill="white"/>
+  <!-- Checkmark -->
+  <path d="M72 96 L90 114 L120 78" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+</svg>
