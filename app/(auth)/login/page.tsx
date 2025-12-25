@@ -23,7 +23,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-accent/5 to-primary/5 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-background via-accent/5 to-primary/5 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-3xl font-bold">Goals</CardTitle>

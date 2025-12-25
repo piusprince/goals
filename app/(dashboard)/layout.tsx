@@ -31,7 +31,9 @@ export default async function DashboardLayout({
           avatar_url: userData?.avatar_url || null,
         }}
       />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-20 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-20 sm:px-6 lg:px-8">
+        {children}
+      </main>
       <BottomNav />
     </div>
   );

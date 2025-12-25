@@ -1,8 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { GoalCard } from "@/components/goals/goal-card";
 import { EmptyState } from "@/components/goals/empty-state";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { LinkButton } from "@/components/ui/link-button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 
@@ -14,7 +13,9 @@ export default async function DashboardPage({
   searchParams,
 }: Readonly<DashboardPageProps>) {
   const params = await searchParams;
-  const year = params.year ? Number.parseInt(params.year) : new Date().getFullYear();
+  const year = params.year
+    ? Number.parseInt(params.year)
+    : new Date().getFullYear();
 
   const supabase = await createServerClient();
   const {
@@ -41,10 +42,10 @@ export default async function DashboardPage({
     <div className="py-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">My Goals</h1>
-        <Button render={<Link href="/goals/new" />} className="flex items-center">
+        <LinkButton href="/goals/new">
           <HugeiconsIcon icon={Add01Icon} className="mr-2 h-4 w-4" />
           New Goal
-        </Button>
+        </LinkButton>
       </div>
 
       {goals && goals.length > 0 ? (

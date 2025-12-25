@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Target01Icon, Home01Icon } from "@hugeicons/core-free-icons";
 
@@ -17,10 +16,10 @@ export default function GoalNotFound() {
         <p className="mb-6 max-w-md text-sm text-muted-foreground">
           This goal doesn&apos;t exist or you don&apos;t have access to it.
         </p>
-        <Button render={<Link href="/dashboard" />} className="flex items-center">
+        <LinkButton href="/dashboard">
           <HugeiconsIcon icon={Home01Icon} className="mr-2 h-4 w-4" />
           Back to Dashboard
-        </Button>
+        </LinkButton>
       </div>
     </div>
   );

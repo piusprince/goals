@@ -6,7 +6,7 @@ interface GoalPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function GoalPage({ params }: GoalPageProps) {
+export default async function GoalPage({ params }: Readonly<GoalPageProps>) {
   const { id } = await params;
   const supabase = await createServerClient();
 

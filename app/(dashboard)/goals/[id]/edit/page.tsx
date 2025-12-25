@@ -1,8 +1,7 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { GoalEditForm } from "@/components/goals/goal-edit-form";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { LinkButton } from "@/components/ui/link-button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 
@@ -10,7 +9,9 @@ interface EditGoalPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function EditGoalPage({ params }: EditGoalPageProps) {
+export default async function EditGoalPage({
+  params,
+}: Readonly<EditGoalPageProps>) {
   const { id } = await params;
   const supabase = await createServerClient();
 
@@ -36,10 +37,15 @@ export default async function EditGoalPage({ params }: EditGoalPageProps) {
   return (
     <div className="mx-auto max-w-lg py-6">
       <div className="mb-6">
-        <Button variant="ghost" size="sm" render={<Link href={`/goals/${id}`} />} className="mb-4">
+        <LinkButton
+          variant="ghost"
+          size="sm"
+          href={`/goals/${id}`}
+          className="mb-4"
+        >
           <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-2 h-4 w-4" />
           Back
-        </Button>
+        </LinkButton>
         <h1 className="text-2xl font-bold">Edit Goal</h1>
         <p className="text-muted-foreground">Update your goal details</p>
       </div>
