@@ -2,6 +2,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { GoalCard } from "@/components/goals/goal-card";
 import { EmptyState } from "@/components/goals/empty-state";
 import { LinkButton } from "@/components/ui/link-button";
+import { PageTransition } from "@/components/layout/page-transition";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
 
@@ -39,24 +40,27 @@ export default async function DashboardPage({
   }
 
   return (
-    <div className="py-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">My Goals</h1>
-        <LinkButton href="/goals/new">
-          <HugeiconsIcon icon={Add01Icon} className="mr-2 h-4 w-4" />
-          New Goal
-        </LinkButton>
-      </div>
-
-      {goals && goals.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {goals.map((goal) => (
-            <GoalCard key={goal.id} goal={goal} />
-          ))}
+    <PageTransition>
+      <div className="py-6">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-xl sm:text-2xl font-bold">My Goals</h1>
+          <LinkButton href="/goals/new">
+            <HugeiconsIcon icon={Add01Icon} className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">New Goal</span>
+            <span className="sm:hidden">New</span>
+          </LinkButton>
         </div>
-      ) : (
-        <EmptyState year={year} />
-      )}
-    </div>
+
+        {goals && goals.length > 0 ? (
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {goals.map((goal) => (
+              <GoalCard key={goal.id} goal={goal} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState year={year} />
+        )}
+      </div>
+    </PageTransition>
   );
 }
