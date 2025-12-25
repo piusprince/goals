@@ -4,7 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Goal, CheckIn, StreakFreeze } from "@/lib/supabase/types";
+import {
+  Goal,
+  CheckIn,
+  StreakFreeze,
+  GoalMemberWithUser,
+  SharedGoalProgress,
+  GoalMemberRole,
+} from "@/lib/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +30,8 @@ import {
   CheckmarkCircle01Icon,
   Target01Icon,
   RepeatIcon,
+  UserGroupIcon,
+  Share01Icon,
 } from "@hugeicons/core-free-icons";
 import {
   AlertDialog,
@@ -40,6 +49,9 @@ import { CheckInList } from "./check-in-list";
 import { StreakDisplay, ProgressSummary, ProgressChart } from "./progress";
 import { StreakFreezeToggle } from "./streak-freeze-toggle";
 import { InsightsCard } from "./insights-card";
+import { ShareGoalModal } from "./share-goal-modal";
+import { MembersList } from "./members-list";
+import { MemberProgress } from "./member-progress";
 import type { GoalInsights } from "@/lib/actions/insights-actions";
 
 interface GoalDetailProps {
@@ -49,6 +61,11 @@ interface GoalDetailProps {
   totalCheckIns?: number;
   streakFreeze?: StreakFreeze | null;
   insights?: GoalInsights | null;
+  // Sharing props
+  members?: GoalMemberWithUser[];
+  memberProgress?: SharedGoalProgress[];
+  currentUserId?: string;
+  currentUserRole?: GoalMemberRole;
 }
 
 const typeIcons = {
@@ -81,14 +98,25 @@ export function GoalDetail({
   totalCheckIns = 0,
   streakFreeze = null,
   insights = null,
+  members = [],
+  memberProgress = [],
+  currentUserId = "",
+  currentUserRole = "viewer",
 }: Readonly<GoalDetailProps>) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [isProgressOpen, setIsProgressOpen] = useState(false);
 
   // Computed from completed_at timestamp
   const isCompleted = goal.completed_at !== null;
+  const isOwner =
+    currentUserRole === "owner" || goal.owner_id === currentUserId;
+  const canCheckIn =
+    currentUserRole === "owner" || currentUserRole === "collaborator";
 
   const Icon = typeIcons[goal.type];
 
@@ -179,8 +207,25 @@ export function GoalDetail({
                     Completed
                   </Badge>
                 )}
+                {goal.is_shared && (
+                  <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-100 flex items-center gap-1">
+                    <HugeiconsIcon icon={UserGroupIcon} className="h-3 w-3" />
+                    Shared ({members.length})
+                  </Badge>
+                )}
               </div>
             </div>
+            {/* Share button for owners */}
+            {goal.is_shared && isOwner && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsShareModalOpen(true)}
+              >
+                <HugeiconsIcon icon={Share01Icon} className="mr-2 h-4 w-4" />
+                Share
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -224,12 +269,19 @@ export function GoalDetail({
               />
 
               {/* Check-in Form */}
-              <CheckInForm
-                goalId={goal.id}
-                goalType="target"
-                hasCheckedInToday={hasCheckedInToday}
-                onSuccess={handleCheckInSuccess}
-              />
+              {canCheckIn && (
+                <CheckInForm
+                  goalId={goal.id}
+                  goalType="target"
+                  hasCheckedInToday={hasCheckedInToday}
+                  onSuccess={handleCheckInSuccess}
+                />
+              )}
+              {!canCheckIn && (
+                <div className="p-4 bg-muted rounded-lg text-center text-muted-foreground">
+                  <p>Viewers cannot log check-ins</p>
+                </div>
+              )}
 
               {/* Progress Chart */}
               {checkIns.length > 0 && (
@@ -273,12 +325,19 @@ export function GoalDetail({
               />
 
               {/* Check-in Form */}
-              <CheckInForm
-                goalId={goal.id}
-                goalType="habit"
-                hasCheckedInToday={hasCheckedInToday}
-                onSuccess={handleCheckInSuccess}
-              />
+              {canCheckIn && (
+                <CheckInForm
+                  goalId={goal.id}
+                  goalType="habit"
+                  hasCheckedInToday={hasCheckedInToday}
+                  onSuccess={handleCheckInSuccess}
+                />
+              )}
+              {!canCheckIn && (
+                <div className="p-4 bg-muted rounded-lg text-center text-muted-foreground">
+                  <p>Viewers cannot log check-ins</p>
+                </div>
+              )}
 
               {/* Progress Chart (Calendar Heatmap) */}
               <ProgressChart checkIns={checkIns} goalType="habit" />
@@ -295,6 +354,64 @@ export function GoalDetail({
               {insights && (
                 <InsightsCard insights={insights} goalType="habit" />
               )}
+            </div>
+          )}
+
+          {/* Shared Goal: Members Section */}
+          {goal.is_shared && members.length > 0 && (
+            <div className="space-y-4 border-t pt-4">
+              <div>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between"
+                  onClick={() => setIsMembersOpen(!isMembersOpen)}
+                >
+                  <span className="flex items-center gap-2">
+                    <HugeiconsIcon icon={UserGroupIcon} className="h-4 w-4" />
+                    Members ({members.length})
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    {isMembersOpen ? "Hide" : "Show"}
+                  </span>
+                </Button>
+                {isMembersOpen && (
+                  <div className="pt-4">
+                    <MembersList
+                      goalId={goal.id}
+                      members={members}
+                      currentUserId={currentUserId}
+                      currentUserRole={currentUserRole}
+                      onMemberChanged={() => router.refresh()}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Member Progress (for shared target/habit goals) */}
+              {(goal.type === "target" || goal.type === "habit") &&
+                memberProgress.length > 0 && (
+                  <div>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-between"
+                      onClick={() => setIsProgressOpen(!isProgressOpen)}
+                    >
+                      <span>Progress by Member</span>
+                      <span className="text-muted-foreground text-sm">
+                        {isProgressOpen ? "Hide" : "Show"}
+                      </span>
+                    </Button>
+                    {isProgressOpen && (
+                      <div className="pt-4">
+                        <MemberProgress
+                          progress={memberProgress}
+                          goalType={goal.type}
+                          targetValue={goal.target_value ?? undefined}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
           )}
 
@@ -339,6 +456,15 @@ export function GoalDetail({
           </div>
         </CardContent>
       </Card>
+
+      {/* Share Modal */}
+      <ShareGoalModal
+        goalId={goal.id}
+        goalTitle={goal.title}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        onInviteSent={() => router.refresh()}
+      />
     </div>
   );
 }

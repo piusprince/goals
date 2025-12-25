@@ -5,7 +5,8 @@ import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Goal } from "@/lib/supabase/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GoalWithMembers } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -15,10 +16,9 @@ import {
   UserMultiple02Icon,
 } from "@hugeicons/core-free-icons";
 
-interface GoalCardProps {
-  goal: Goal;
+interface SharedGoalCardProps {
+  goal: GoalWithMembers;
   hasCheckedInToday?: boolean;
-  memberCount?: number;
 }
 
 const typeIcons = {
@@ -44,13 +44,15 @@ const categoryColors: Record<string, string> = {
   other: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100",
 };
 
-export function GoalCard({
+export function SharedGoalCard({
   goal,
   hasCheckedInToday = false,
-  memberCount = 0,
-}: Readonly<GoalCardProps>) {
+}: Readonly<SharedGoalCardProps>) {
   const Icon = typeIcons[goal.type];
   const isCompleted = goal.completed_at !== null;
+  const members = goal.members || [];
+  const displayedMembers = members.slice(0, 3);
+  const remainingCount = members.length - 3;
 
   const calculateProgress = () => {
     if (goal.type === "target" && goal.target_value) {
@@ -74,12 +76,18 @@ export function GoalCard({
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        <Card className="transition-shadow hover:shadow-lg">
+        <Card className="transition-shadow hover:shadow-lg border-primary/20">
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between">
-              <CardTitle className="line-clamp-1 text-lg">
-                {goal.title}
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="line-clamp-1 text-lg">
+                  {goal.title}
+                </CardTitle>
+                <HugeiconsIcon
+                  icon={UserMultiple02Icon}
+                  className="h-4 w-4 text-primary"
+                />
+              </div>
               <HugeiconsIcon
                 icon={Icon}
                 className="h-5 w-5 shrink-0 text-muted-foreground"
@@ -99,18 +107,9 @@ export function GoalCard({
                   {goal.category}
                 </Badge>
               )}
-              {goal.is_shared && memberCount > 0 && (
-                <Badge
-                  variant="outline"
-                  className="text-xs flex items-center gap-1"
-                >
-                  <HugeiconsIcon
-                    icon={UserMultiple02Icon}
-                    className="h-3 w-3"
-                  />
-                  {memberCount}
-                </Badge>
-              )}
+              <Badge variant="outline" className="text-xs">
+                Shared
+              </Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -118,6 +117,36 @@ export function GoalCard({
               <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
                 {goal.description}
               </p>
+            )}
+
+            {/* Members Avatars */}
+            {members.length > 0 && (
+              <div className="mb-3 flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {displayedMembers.map((member) => (
+                    <Avatar
+                      key={member.user_id}
+                      className="h-7 w-7 border-2 border-background"
+                    >
+                      <AvatarImage
+                        src={member.user?.avatar_url || undefined}
+                        alt={member.user?.full_name || "Member"}
+                      />
+                      <AvatarFallback className="text-xs">
+                        {member.user?.full_name?.charAt(0).toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                  {remainingCount > 0 && (
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-muted text-xs font-medium">
+                      +{remainingCount}
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {members.length} {members.length === 1 ? "member" : "members"}
+                </span>
+              </div>
             )}
 
             {goal.type === "target" && goal.target_value && (

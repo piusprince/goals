@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { GoalTypeSelector } from "./goal-type-selector";
 import { CategorySelector } from "./category-selector";
+import { UserMultiple02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Switch } from "@/components/ui/switch";
 
 export function GoalForm() {
   const [state, formAction, isPending] = useActionState<
@@ -17,6 +20,7 @@ export function GoalForm() {
   const [goalType, setGoalType] = useState<"one-time" | "target" | "habit">(
     "one-time"
   );
+  const [isShared, setIsShared] = useState(false);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -90,6 +94,32 @@ export function GoalForm() {
         {state?.errors?.category && (
           <p className="text-sm text-destructive">{state.errors.category[0]}</p>
         )}
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="flex items-center gap-3">
+          <HugeiconsIcon
+            icon={UserMultiple02Icon}
+            className="h-5 w-5 text-muted-foreground"
+          />
+          <div>
+            <Label
+              htmlFor="is_shared"
+              className="text-base font-medium cursor-pointer"
+            >
+              Shared Goal
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              Invite others to contribute to this goal
+            </p>
+          </div>
+        </div>
+        <Switch
+          id="is_shared"
+          name="is_shared"
+          checked={isShared}
+          onCheckedChange={(checked) => setIsShared(checked)}
+        />
       </div>
 
       <div className="flex gap-3">

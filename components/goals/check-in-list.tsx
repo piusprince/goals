@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { CheckIn } from "@/lib/supabase/types";
+import type { CheckIn, CheckInWithUser } from "@/lib/supabase/types";
 import { CheckInItem } from "./check-in-item";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -7,11 +7,13 @@ import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 interface CheckInListProps {
   goalId: string;
-  checkIns: CheckIn[];
+  checkIns: CheckIn[] | CheckInWithUser[];
   goalType?: "one-time" | "target" | "habit";
   limit?: number;
   showViewAll?: boolean;
   totalCount?: number;
+  isSharedGoal?: boolean;
+  currentUserId?: string;
 }
 
 export function CheckInList({
@@ -21,9 +23,13 @@ export function CheckInList({
   limit,
   showViewAll = true,
   totalCount,
+  isSharedGoal = false,
+  currentUserId,
 }: Readonly<CheckInListProps>) {
   const displayedCheckIns = limit ? checkIns.slice(0, limit) : checkIns;
-  const hasMore = totalCount ? totalCount > displayedCheckIns.length : checkIns.length > displayedCheckIns.length;
+  const hasMore = totalCount
+    ? totalCount > displayedCheckIns.length
+    : checkIns.length > displayedCheckIns.length;
 
   if (checkIns.length === 0) {
     return (
@@ -39,7 +45,13 @@ export function CheckInList({
   return (
     <div className="space-y-0">
       {displayedCheckIns.map((checkIn) => (
-        <CheckInItem key={checkIn.id} checkIn={checkIn} goalType={goalType} />
+        <CheckInItem
+          key={checkIn.id}
+          checkIn={checkIn}
+          goalType={goalType}
+          isSharedGoal={isSharedGoal}
+          canDelete={!isSharedGoal || checkIn.user_id === currentUserId}
+        />
       ))}
 
       {showViewAll && hasMore && (

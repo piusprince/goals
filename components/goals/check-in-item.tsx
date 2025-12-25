@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import type { CheckIn } from "@/lib/supabase/types";
+import type { CheckIn, CheckInWithUser } from "@/lib/supabase/types";
 import { deleteCheckIn } from "@/lib/actions/check-in-actions";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,13 +28,23 @@ import {
 import { cn } from "@/lib/utils";
 
 interface CheckInItemProps {
-  checkIn: CheckIn;
+  checkIn: CheckIn | CheckInWithUser;
   goalType?: "one-time" | "target" | "habit";
+  isSharedGoal?: boolean;
+  canDelete?: boolean;
 }
 
-export function CheckInItem({ checkIn, goalType = "habit" }: Readonly<CheckInItemProps>) {
+export function CheckInItem({
+  checkIn,
+  goalType = "habit",
+  isSharedGoal = false,
+  canDelete = true,
+}: Readonly<CheckInItemProps>) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Check if this is a CheckInWithUser
+  const user = "user" in checkIn ? checkIn.user : null;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -53,8 +64,26 @@ export function CheckInItem({ checkIn, goalType = "habit" }: Readonly<CheckInIte
     <div className="border-b border-border py-3 last:border-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {/* User avatar for shared goals */}
+          {isSharedGoal && user && (
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={user.avatar_url || undefined}
+                alt={user.display_name || "User"}
+              />
+              <AvatarFallback className="text-xs">
+                {user.display_name?.charAt(0).toUpperCase() || "?"}
+              </AvatarFallback>
+            </Avatar>
+          )}
+
           {/* Date and time */}
           <div>
+            {isSharedGoal && user && (
+              <p className="text-xs text-muted-foreground">
+                {user.display_name}
+              </p>
+            )}
             <p className="font-medium">{formattedDate}</p>
             <p className="text-xs text-muted-foreground">{formattedTime}</p>
           </div>
@@ -83,38 +112,40 @@ export function CheckInItem({ checkIn, goalType = "habit" }: Readonly<CheckInIte
         </div>
 
         {/* Delete button */}
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={isDeleting}
-                className="text-muted-foreground hover:text-destructive"
-              />
-            }
-          >
-            <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete check-in?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will remove this check-in and subtract {checkIn.value} from
-                your progress. This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {canDelete && (
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isDeleting}
+                  className="text-muted-foreground hover:text-destructive"
+                />
+              }
+            >
+              <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete check-in?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove this check-in and subtract {checkIn.value}{" "}
+                  from your progress. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       {/* Expandable note */}

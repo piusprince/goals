@@ -15,11 +15,16 @@ interface NotificationSettingsProps {
   initialPreferences: NotificationPreferences;
 }
 
-export function NotificationSettings({ initialPreferences }: NotificationSettingsProps) {
+export function NotificationSettings({
+  initialPreferences,
+}: NotificationSettingsProps) {
   const [isPending, startTransition] = useTransition();
   const [preferences, setPreferences] = useState(initialPreferences);
   const [hasChanges, setHasChanges] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [saveMessage, setSaveMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // Push notifications hook
   const {
@@ -38,7 +43,8 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
       preferences.daily_reminders !== initialPreferences.daily_reminders ||
       preferences.reminder_time !== initialPreferences.reminder_time ||
       preferences.weekly_summary !== initialPreferences.weekly_summary ||
-      preferences.achievement_alerts !== initialPreferences.achievement_alerts ||
+      preferences.achievement_alerts !==
+        initialPreferences.achievement_alerts ||
       preferences.streak_warnings !== initialPreferences.streak_warnings;
     setHasChanges(changed);
   }, [preferences, initialPreferences]);
@@ -72,10 +78,16 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
       });
 
       if (result.success) {
-        setSaveMessage({ type: "success", text: "Settings saved successfully!" });
+        setSaveMessage({
+          type: "success",
+          text: "Settings saved successfully!",
+        });
         setHasChanges(false);
       } else {
-        setSaveMessage({ type: "error", text: result.error || "Failed to save settings" });
+        setSaveMessage({
+          type: "error",
+          text: result.error || "Failed to save settings",
+        });
       }
     });
   };
@@ -87,7 +99,9 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
     <Card className="p-6">
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-semibold mb-1">Notification Preferences</h2>
+          <h2 className="text-lg font-semibold mb-1">
+            Notification Preferences
+          </h2>
           <p className="text-sm text-muted-foreground">
             Choose what notifications you&apos;d like to receive
           </p>
@@ -96,21 +110,30 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
         {/* Push Notifications Section */}
         <div className="rounded-lg border p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <HugeiconsIcon icon={Notification01Icon} className="h-5 w-5 text-primary" />
+            <HugeiconsIcon
+              icon={Notification01Icon}
+              className="h-5 w-5 text-primary"
+            />
             <h3 className="font-medium">Push Notifications</h3>
           </div>
-          
+
           {!pushSupported ? (
             <div className="flex items-start gap-2 text-sm text-muted-foreground">
-              <HugeiconsIcon icon={Alert01Icon} className="h-4 w-4 mt-0.5 shrink-0" />
+              <HugeiconsIcon
+                icon={Alert01Icon}
+                className="h-4 w-4 mt-0.5 shrink-0"
+              />
               <p>Push notifications are not supported in this browser.</p>
             </div>
           ) : permissionState === "denied" ? (
             <div className="flex items-start gap-2 text-sm text-amber-600 dark:text-amber-400">
-              <HugeiconsIcon icon={Alert01Icon} className="h-4 w-4 mt-0.5 shrink-0" />
+              <HugeiconsIcon
+                icon={Alert01Icon}
+                className="h-4 w-4 mt-0.5 shrink-0"
+              />
               <p>
-                Push notifications are blocked. Please enable them in your browser settings
-                to receive reminders.
+                Push notifications are blocked. Please enable them in your
+                browser settings to receive reminders.
               </p>
             </div>
           ) : pushSubscribed ? (
@@ -120,7 +143,8 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
                   ✓ Push notifications enabled
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  You&apos;ll receive notifications for reminders, achievements, and streak warnings.
+                  You&apos;ll receive notifications for reminders, achievements,
+                  and streak warnings.
                 </p>
               </div>
               <Button
@@ -137,7 +161,8 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
               <div>
                 <p className="text-sm">Enable push notifications</p>
                 <p className="text-xs text-muted-foreground">
-                  Get notified about reminders, achievements, and streak warnings.
+                  Get notified about reminders, achievements, and streak
+                  warnings.
                 </p>
               </div>
               <Button
@@ -149,9 +174,11 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
               </Button>
             </div>
           )}
-          
+
           {pushError && (
-            <p className="text-xs text-red-600 dark:text-red-400">{pushError}</p>
+            <p className="text-xs text-red-600 dark:text-red-400">
+              {pushError}
+            </p>
           )}
         </div>
 
@@ -213,7 +240,10 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
         {/* Achievement Alerts */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="achievement-alerts" className="text-base font-medium">
+            <Label
+              htmlFor="achievement-alerts"
+              className="text-base font-medium"
+            >
               Achievement Alerts
             </Label>
             <p className="text-sm text-muted-foreground">
