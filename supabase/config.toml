@@ -1,0 +1,51 @@
+# Supabase Configuration
+# This file contains the configuration for Supabase features
+
+[project]
+id = "your-project-id"
+
+# Edge Functions Configuration
+[functions.send-daily-reminders]
+verify_jwt = false  # Allow cron to call without JWT
+
+[functions.send-streak-warnings]
+verify_jwt = false  # Allow cron to call without JWT
+
+# Note: Scheduling must be configured in the Supabase Dashboard
+# or via the Supabase CLI with the following cron expressions:
+#
+# send-daily-reminders: */15 * * * * (every 15 minutes)
+# send-streak-warnings: 0 22 * * * (daily at 10 PM)
+#
+# To set up scheduling via Dashboard:
+# 1. Go to Database > Database Functions > pg_cron
+# 2. Enable pg_cron extension if not enabled
+# 3. Create cron jobs to call the Edge Functions:
+#
+# For daily reminders (every 15 minutes):
+# SELECT cron.schedule(
+#   'send-daily-reminders',
+#   '*/15 * * * *',
+#   $$
+#   SELECT
+#     net.http_post(
+#       url:='https://your-project-ref.supabase.co/functions/v1/send-daily-reminders',
+#       headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_SERVICE_ROLE_KEY"}'::jsonb,
+#       body:='{}'::jsonb
+#     ) AS request_id;
+#   $$
+# );
+#
+# For streak warnings (daily at 10 PM):
+# SELECT cron.schedule(
+#   'send-streak-warnings',
+#   '0 22 * * *',
+#   $$
+#   SELECT
+#     net.http_post(
+#       url:='https://your-project-ref.supabase.co/functions/v1/send-streak-warnings',
+#       headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_SERVICE_ROLE_KEY"}'::jsonb,
+#       body:='{}'::jsonb
+#     ) AS request_id;
+#   $$
+# );
