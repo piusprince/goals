@@ -3,10 +3,13 @@
 import { useState, useTransition, useEffect } from "react";
 import { NotificationPreferences } from "@/lib/supabase/types";
 import { updateNotificationPreferences } from "@/lib/actions/notification-actions";
+import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Notification01Icon, Alert01Icon } from "@hugeicons/core-free-icons";
 
 interface NotificationSettingsProps {
   initialPreferences: NotificationPreferences;
@@ -17,6 +20,17 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
   const [preferences, setPreferences] = useState(initialPreferences);
   const [hasChanges, setHasChanges] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Push notifications hook
+  const {
+    isSupported: pushSupported,
+    permissionState,
+    isSubscribed: pushSubscribed,
+    isLoading: pushLoading,
+    error: pushError,
+    subscribe: subscribeToPush,
+    unsubscribe: unsubscribeFromPush,
+  } = usePushNotifications();
 
   // Track changes
   useEffect(() => {
@@ -77,6 +91,68 @@ export function NotificationSettings({ initialPreferences }: NotificationSetting
           <p className="text-sm text-muted-foreground">
             Choose what notifications you&apos;d like to receive
           </p>
+        </div>
+
+        {/* Push Notifications Section */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <HugeiconsIcon icon={Notification01Icon} className="h-5 w-5 text-primary" />
+            <h3 className="font-medium">Push Notifications</h3>
+          </div>
+          
+          {!pushSupported ? (
+            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+              <HugeiconsIcon icon={Alert01Icon} className="h-4 w-4 mt-0.5 shrink-0" />
+              <p>Push notifications are not supported in this browser.</p>
+            </div>
+          ) : permissionState === "denied" ? (
+            <div className="flex items-start gap-2 text-sm text-amber-600 dark:text-amber-400">
+              <HugeiconsIcon icon={Alert01Icon} className="h-4 w-4 mt-0.5 shrink-0" />
+              <p>
+                Push notifications are blocked. Please enable them in your browser settings
+                to receive reminders.
+              </p>
+            </div>
+          ) : pushSubscribed ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                  ✓ Push notifications enabled
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  You&apos;ll receive notifications for reminders, achievements, and streak warnings.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={unsubscribeFromPush}
+                disabled={pushLoading}
+              >
+                {pushLoading ? "..." : "Disable"}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm">Enable push notifications</p>
+                <p className="text-xs text-muted-foreground">
+                  Get notified about reminders, achievements, and streak warnings.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={subscribeToPush}
+                disabled={pushLoading}
+              >
+                {pushLoading ? "Enabling..." : "Enable"}
+              </Button>
+            </div>
+          )}
+          
+          {pushError && (
+            <p className="text-xs text-red-600 dark:text-red-400">{pushError}</p>
+          )}
         </div>
 
         {/* Daily Reminders */}
