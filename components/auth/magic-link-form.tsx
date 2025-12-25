@@ -8,9 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const emailSchema = z
-  .string()
-  .email({ message: "Please enter a valid email address" });
+const emailSchema = z.email({ error: "Please enter a valid email address" });
 
 interface MagicLinkFormProps {
   onSuccess?: () => void;

@@ -73,6 +73,9 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+
+  // Computed from completed_at timestamp
+  const isCompleted = goal.completed_at !== null;
   const [currentValue, setCurrentValue] = useState(goal.current_value);
   const [isUpdatingProgress, setIsUpdatingProgress] = useState(false);
 
@@ -106,7 +109,7 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
 
   const handleToggleComplete = async () => {
     setIsToggling(true);
-    const result = await toggleGoalComplete(goal.id, !goal.is_completed);
+    const result = await toggleGoalComplete(goal.id, !isCompleted);
     if (result.success) {
       toast.success(result.message);
       router.refresh();
@@ -173,7 +176,7 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
                     {goal.category}
                   </Badge>
                 )}
-                {goal.is_completed && (
+                {isCompleted && (
                   <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
                     Completed
                   </Badge>
@@ -196,7 +199,7 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
               <div>
                 <h3 className="font-medium">Status</h3>
                 <p className="text-sm text-muted-foreground">
-                  {goal.is_completed
+                  {isCompleted
                     ? "This goal is complete!"
                     : "Mark as complete when done"}
                 </p>
@@ -204,11 +207,11 @@ export function GoalDetail({ goal }: Readonly<GoalDetailProps>) {
               <Button
                 onClick={handleToggleComplete}
                 disabled={isToggling}
-                variant={goal.is_completed ? "outline" : "default"}
+                variant={isCompleted ? "outline" : "default"}
               >
                 {isToggling && "Updating..."}
-                {!isToggling && goal.is_completed && "Mark Incomplete"}
-                {!isToggling && !goal.is_completed && "Mark Complete"}
+                {!isToggling && isCompleted && "Mark Incomplete"}
+                {!isToggling && !isCompleted && "Mark Complete"}
               </Button>
             </div>
           )}

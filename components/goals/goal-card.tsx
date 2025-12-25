@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -42,6 +43,7 @@ const categoryColors: Record<string, string> = {
 
 export function GoalCard({ goal }: Readonly<GoalCardProps>) {
   const Icon = typeIcons[goal.type];
+  const isCompleted = goal.completed_at !== null;
 
   const calculateProgress = () => {
     if (goal.type === "target" && goal.target_value) {
@@ -50,7 +52,7 @@ export function GoalCard({ goal }: Readonly<GoalCardProps>) {
         Math.round((goal.current_value / goal.target_value) * 100)
       );
     }
-    if (goal.type === "one-time" && goal.is_completed) {
+    if (goal.type === "one-time" && isCompleted) {
       return 100;
     }
     return 0;
@@ -60,70 +62,78 @@ export function GoalCard({ goal }: Readonly<GoalCardProps>) {
 
   return (
     <Link href={`/goals/${goal.id}`}>
-      <Card className="transition-shadow hover:shadow-md">
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between">
-            <CardTitle className="line-clamp-1 text-lg">{goal.title}</CardTitle>
-            <HugeiconsIcon
-              icon={Icon}
-              className="h-5 w-5 shrink-0 text-muted-foreground"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Badge variant="secondary" className="text-xs">
-              {typeLabels[goal.type]}
-            </Badge>
-            {goal.category && (
-              <Badge
-                className={cn(
-                  "text-xs",
-                  categoryColors[goal.category] || categoryColors.other
-                )}
-              >
-                {goal.category}
+      <motion.div
+        whileHover={{ y: -4 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      >
+        <Card className="transition-shadow hover:shadow-lg">
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between">
+              <CardTitle className="line-clamp-1 text-lg">
+                {goal.title}
+              </CardTitle>
+              <HugeiconsIcon
+                icon={Icon}
+                className="h-5 w-5 shrink-0 text-muted-foreground"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {typeLabels[goal.type]}
               </Badge>
+              {goal.category && (
+                <Badge
+                  className={cn(
+                    "text-xs",
+                    categoryColors[goal.category] || categoryColors.other
+                  )}
+                >
+                  {goal.category}
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {goal.description && (
+              <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
+                {goal.description}
+              </p>
             )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {goal.description && (
-            <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
-              {goal.description}
-            </p>
-          )}
 
-          {goal.type === "target" && goal.target_value && (
-            <div className="space-y-1">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">
-                  {goal.current_value} / {goal.target_value}
+            {goal.type === "target" && goal.target_value && (
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Progress</span>
+                  <span className="font-medium">
+                    {goal.current_value} / {goal.target_value}
+                  </span>
+                </div>
+                <Progress value={progress} className="h-2" />
+              </div>
+            )}
+
+            {goal.type === "one-time" && (
+              <div className="flex items-center gap-2 text-sm">
+                <span
+                  className={cn(
+                    "font-medium",
+                    isCompleted ? "text-green-600" : "text-muted-foreground"
+                  )}
+                >
+                  {isCompleted ? "Completed" : "In progress"}
                 </span>
               </div>
-              <Progress value={progress} className="h-2" />
-            </div>
-          )}
+            )}
 
-          {goal.type === "one-time" && (
-            <div className="flex items-center gap-2 text-sm">
-              <span
-                className={cn(
-                  "font-medium",
-                  goal.is_completed ? "text-green-600" : "text-muted-foreground"
-                )}
-              >
-                {goal.is_completed ? "Completed" : "In progress"}
-              </span>
-            </div>
-          )}
-
-          {goal.type === "habit" && (
-            <div className="text-sm text-muted-foreground">
-              Track your daily habit
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            {goal.type === "habit" && (
+              <div className="text-sm text-muted-foreground">
+                Track your daily habit
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </Link>
   );
 }
