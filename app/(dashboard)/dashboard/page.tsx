@@ -3,8 +3,12 @@ import { GoalCard } from "@/components/goals/goal-card";
 import { EmptyState } from "@/components/goals/empty-state";
 import { LinkButton } from "@/components/ui/link-button";
 import { PageTransition } from "@/components/layout/page-transition";
+import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { DashboardInsights } from "@/components/dashboard/dashboard-insights";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Add01Icon } from "@hugeicons/core-free-icons";
+import { getTodayCheckInStatus } from "@/lib/actions/check-in-actions";
+import { getDashboardInsights } from "@/lib/actions/insights-actions";
 
 interface DashboardPageProps {
   searchParams: Promise<{ year?: string }>;
@@ -39,6 +43,21 @@ export default async function DashboardPage({
     console.error("Error fetching goals:", error);
   }
 
+  // Fetch today's check-in status for all goals
+  const goalIds = goals?.map((g) => g.id) || [];
+  const todayCheckInStatus = goalIds.length > 0 
+    ? await getTodayCheckInStatus(goalIds) 
+    : {};
+
+  // Fetch dashboard insights
+  const insightsResult = await getDashboardInsights();
+
+  // Calculate stats
+  const totalGoals = goals?.length || 0;
+  const completedGoals = goals?.filter((g) => g.completed_at !== null).length || 0;
+  const activeStreaks = goals?.filter((g) => g.type === "habit" && (g.current_streak || 0) > 0).length || 0;
+  const todayCheckIns = Object.values(todayCheckInStatus).filter(Boolean).length;
+
   return (
     <PageTransition>
       <div className="py-6">
@@ -51,10 +70,29 @@ export default async function DashboardPage({
           </LinkButton>
         </div>
 
+        {/* Dashboard Stats */}
+        {totalGoals > 0 && (
+          <DashboardStats
+            totalGoals={totalGoals}
+            completedGoals={completedGoals}
+            activeStreaks={activeStreaks}
+            todayCheckIns={todayCheckIns}
+          />
+        )}
+
+        {/* Dashboard Insights */}
+        {totalGoals > 0 && insightsResult.success && insightsResult.data && (
+          <DashboardInsights insights={insightsResult.data} />
+        )}
+
         {goals && goals.length > 0 ? (
           <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {goals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} />
+              <GoalCard 
+                key={goal.id} 
+                goal={goal}
+                hasCheckedInToday={todayCheckInStatus[goal.id] ?? false}
+              />
             ))}
           </div>
         ) : (

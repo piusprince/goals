@@ -1,5 +1,6 @@
 import { createServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -13,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions/profile-actions";
 import { Separator } from "@/components/ui/separator";
 import { PageTransition } from "@/components/layout/page-transition";
+import { getAllBadges, getUserBadges } from "@/lib/actions/badge-actions";
+import { BadgeGrid } from "@/components/badges/badge-grid";
 
 export default async function ProfilePage() {
   const supabase = await createServerClient();
@@ -34,6 +37,17 @@ export default async function ProfilePage() {
     redirect("/login");
   }
 
+  // Fetch badges data
+  const [allBadgesResult, userBadgesResult] = await Promise.all([
+    getAllBadges(),
+    getUserBadges(),
+  ]);
+
+  const allBadges = allBadgesResult.data ?? [];
+  const userBadges = userBadgesResult.data ?? [];
+  const earnedCount = userBadges.length;
+  const totalCount = allBadges.length;
+
   return (
     <PageTransition>
       <div className="mx-auto max-w-2xl py-6 sm:py-8">
@@ -42,6 +56,35 @@ export default async function ProfilePage() {
         </h1>
 
         <div className="space-y-4 sm:space-y-6">
+          {/* Badges Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Achievements</span>
+                <span className="text-sm font-normal text-muted-foreground">
+                  {earnedCount} / {totalCount} earned
+                </span>
+              </CardTitle>
+              <CardDescription>
+                Badges you&apos;ve earned on your goal journey
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {allBadges.length > 0 ? (
+                <BadgeGrid
+                  badges={allBadges}
+                  earnedBadges={userBadges}
+                  columns={4}
+                  className="sm:grid-cols-5"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No badges available yet. Keep working on your goals!
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Profile Picture</CardTitle>
@@ -82,6 +125,16 @@ export default async function ProfilePage() {
                   <p className="text-sm text-muted-foreground">
                     {authUser.email}
                   </p>
+                </div>
+
+                <Separator />
+
+                <div className="flex flex-col gap-2">
+                  <Link href="/settings">
+                    <Button variant="outline" className="w-full">
+                      Notification Settings
+                    </Button>
+                  </Link>
                 </div>
 
                 <Separator />
