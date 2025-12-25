@@ -17,14 +17,11 @@ export default async function SharedGoalsPage() {
   }
 
   // Fetch all shared goals and pending invite count
-  const [sharedGoalsResult, pendingInvitesResult] = await Promise.all([
+  const [sharedGoals, pendingInvitesResult] = await Promise.all([
     getSharedGoals("all"),
     getPendingInviteCount(),
   ]);
 
-  const sharedGoals = sharedGoalsResult.success
-    ? sharedGoalsResult.data ?? []
-    : [];
   const pendingInviteCount = pendingInvitesResult.success
     ? pendingInvitesResult.data ?? 0
     : 0;
