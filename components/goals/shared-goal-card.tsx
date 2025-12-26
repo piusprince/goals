@@ -133,7 +133,8 @@ export function SharedGoalCard({
                         alt={member.user?.display_name || "Member"}
                       />
                       <AvatarFallback className="text-xs">
-                        {member.user?.display_name?.charAt(0).toUpperCase() || "?"}
+                        {member.user?.display_name?.charAt(0).toUpperCase() ||
+                          "?"}
                       </AvatarFallback>
                     </Avatar>
                   ))}

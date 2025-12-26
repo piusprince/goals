@@ -19,7 +19,6 @@ export default async function SettingsPage() {
     redirect("/login");
   }
 
-  // Get notification preferences (creates defaults if not exist)
   const prefsResult = await getNotificationPreferences();
 
   if (!prefsResult.success || !prefsResult.data) {

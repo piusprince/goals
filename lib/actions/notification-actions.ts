@@ -356,9 +356,9 @@ export async function sendInviteNotification(
   // The email is only in auth.users which is not directly accessible.
   // Push notifications for invites will be sent when the user accepts the invite
   // or when they have enabled email notifications (handled by the invite email itself).
-  
+
   console.log(`Invite sent to ${inviteeEmail} for goal "${goalTitle}"`);
-  
+
   // Return success since the invite was created, even if we can't send push notification
   return { success: true };
 }
