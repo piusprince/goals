@@ -60,13 +60,6 @@ export function HowItWorksSection() {
                 </div>
               </div>
 
-              {/* Connecting line (hidden on last item and mobile) */}
-              {index < steps.length - 1 && (
-                <div className="absolute left-1/2 top-8 hidden h-1 w-full -translate-x-1/2 translate-y-0 md:block">
-                  <div className="h-full w-full border-t-2 border-dashed border-primary/30" />
-                </div>
-              )}
-
               <h3 className="mb-2 text-center text-xl font-semibold">
                 {step.title}
               </h3>
