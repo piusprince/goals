@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Target01Icon,
-  Fire01Icon,
+  FireIcon,
   UserMultiple02Icon,
   ChartLineData01Icon,
   Award02Icon,
@@ -19,7 +19,7 @@ const features = [
       "Track habits, one-time milestones, or long-term aspirations. Customize your goals to fit your lifestyle.",
   },
   {
-    icon: Fire01Icon,
+    icon: FireIcon,
     title: "Streak Tracking",
     description:
       "Build momentum with visual streak counters. Never break the chain and watch your consistency grow.",

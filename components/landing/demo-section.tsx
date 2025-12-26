@@ -6,7 +6,8 @@ import {
   ChartHistogramIcon,
   UserGroupIcon,
   MedalIcon,
-} from "@hugeicons/react";
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 const features = [
   {
@@ -85,7 +86,10 @@ export function DemoSection() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                          <Target01Icon className="w-5 h-5 text-white" />
+                          <HugeiconsIcon
+                            icon={Target01Icon}
+                            className="w-5 h-5 text-white"
+                          />
                         </div>
                         <div>
                           <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
@@ -152,7 +156,7 @@ export function DemoSection() {
                 className="flex items-start gap-4 group"
               >
                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
-                  <feature.icon className="w-6 h-6" />
+                  <HugeiconsIcon icon={feature.icon} className="w-6 h-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-1 group-hover:text-orange-600 transition-colors">

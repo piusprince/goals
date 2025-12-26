@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "../ui/link-button";
 
 export function CTASection() {
   return (
@@ -27,23 +27,22 @@ export function CTASection() {
             </p>
 
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" className="group w-full sm:w-auto" asChild>
-                <Link href="/login">
-                  Get Started Free
-                  <HugeiconsIcon
-                    icon={ArrowRight01Icon}
-                    className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
-                  />
-                </Link>
-              </Button>
-              <Button
+              <LinkButton href="/login" size="lg" className="w-full sm:w-auto">
+                Get Started Free
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
+                />
+              </LinkButton>
+
+              <LinkButton
+                href="/dashboard"
                 size="lg"
                 variant="outline"
                 className="w-full sm:w-auto"
-                asChild
               >
-                <Link href="/dashboard">View Demo</Link>
-              </Button>
+                View Demo
+              </LinkButton>
             </div>
 
             <p className="mt-6 text-sm text-muted-foreground">

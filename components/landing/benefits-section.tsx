@@ -1,18 +1,19 @@
 "use client";
 
 import { motion } from "motion/react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  TrendUpIcon,
+  TradeUpIcon,
   UserGroupIcon,
   SparklesIcon,
   TimeScheduleIcon,
   ChartIcon,
   MedalIcon,
-} from "@hugeicons/react";
+} from "@hugeicons/core-free-icons";
 
 const benefits = [
   {
-    icon: TrendUpIcon,
+    icon: TradeUpIcon,
     title: "Consistent Progress",
     description:
       "Build lasting habits through daily check-ins and streak tracking. Small steps lead to big achievements.",
@@ -83,7 +84,7 @@ export function BenefitsSection() {
             >
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300">
-                  <benefit.icon className="w-6 h-6" />
+                  <HugeiconsIcon icon={benefit.icon} className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold mb-2 group-hover:text-orange-600 transition-colors">
@@ -106,7 +107,10 @@ export function BenefitsSection() {
           className="mt-16 text-center"
         >
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
-            <SparklesIcon className="w-5 h-5 text-orange-600" />
+            <HugeiconsIcon
+              icon={SparklesIcon}
+              className="w-5 h-5 text-orange-600"
+            />
             <p className="text-sm font-medium text-orange-900 dark:text-orange-100">
               Join thousands of users already achieving their goals
             </p>

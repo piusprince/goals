@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { QuoteUpIcon } from "@hugeicons/react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { QuoteUpIcon } from "@hugeicons/core-free-icons";
 
 const testimonials = [
   {
@@ -88,7 +89,7 @@ export function TestimonialsSection() {
             >
               {/* Quote Icon */}
               <div className="absolute top-6 right-6 text-orange-500/20 group-hover:text-orange-500/30 transition-colors">
-                <QuoteUpIcon className="w-8 h-8" />
+                <HugeiconsIcon icon={QuoteUpIcon} className="w-8 h-8" />
               </div>
 
               {/* Rating Stars */}

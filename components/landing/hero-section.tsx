@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Target01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
+import { LinkButton } from "../ui/link-button";
 
 export function HeroSection() {
   return (
@@ -51,23 +52,22 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Button size="lg" className="group w-full sm:w-auto" asChild>
-              <Link href="/login">
-                Get Started Free
-                <HugeiconsIcon
-                  icon={ArrowRight01Icon}
-                  className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
-                />
-              </Link>
-            </Button>
-            <Button
+            <LinkButton href="/login" size="lg" className="w-full sm:w-auto">
+              Get Started Free
+              <HugeiconsIcon
+                icon={ArrowRight01Icon}
+                className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1"
+              />
+            </LinkButton>
+
+            <LinkButton
+              href="#features"
               size="lg"
               variant="outline"
               className="w-full sm:w-auto"
-              asChild
             >
-              <Link href="#features">See How It Works</Link>
-            </Button>
+              See How It Works
+            </LinkButton>
           </motion.div>
 
           <motion.div
