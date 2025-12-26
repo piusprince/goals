@@ -9,7 +9,7 @@ import { LinkButton } from "../ui/link-button";
 export function CTASection() {
   return (
     <section className="py-20 md:py-32">
-      <div className="container px-4">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/20 via-primary/10 to-background p-8 md:p-16">
           <motion.div
             className="relative z-10 mx-auto max-w-3xl text-center"
